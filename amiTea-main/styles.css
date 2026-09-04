@@ -29,6 +29,7 @@ header img {
   display: block;
   margin: 0 auto;
 }
+.brand-logo { width: min(170px, 42vw); height: auto; border-radius: 0; box-shadow: none; mix-blend-mode: multiply; }
 .tag {
   font-family: "Fraunces", serif;
   font-style: italic;
@@ -52,6 +53,27 @@ header img {
 .page-nav .btn { text-decoration: none; padding: 10px 16px; }
 .page-nav .btn.active { background: var(--green); color: var(--white); border-color: var(--green); }
 .menu-page { margin-top: 8px; }
+.menu-body { background: #f5f1e7; }
+.menu-body header { padding: 28px 20px 8px; }
+.menu-logo { display: block; width: min(190px, 48vw); height: auto; margin: 0 auto 16px; mix-blend-mode: multiply; }
+.menu-body .page-nav { margin-top: 12px; }
+.menu-body .wrap { max-width: 920px; padding: 12px 18px 24px; }
+.menu-page { background: transparent; border: 1px solid var(--green); border-radius: 12px; box-shadow: inset 0 0 0 5px #f5f1e7, inset 0 0 0 6px var(--gold); padding: 34px 42px 26px; }
+.menu-page .menu-heading { text-align: center; border-bottom: 1px solid var(--line); padding-bottom: 16px; margin-bottom: 16px; }
+.menu-page .menu-heading h2 { font-size: clamp(1.65rem, 4vw, 2.2rem); }
+.menu-page .menu-heading .sub { font-family: "Fraunces", serif; font-style: italic; }
+.menu-page .menu-groups { gap: 18px; }
+.menu-page .menu-group { border-top: 0; padding-top: 0; }
+.menu-page .menu-group h3 { display: flex; align-items: center; justify-content: center; gap: 22px; font-size: 1.2rem; margin: 0 0 10px; }
+.menu-page .menu-group h3::before, .menu-page .menu-group h3::after { content: ""; width: 64px; height: 2px; background: var(--gold); }
+.menu-page .menu-items { display: grid; grid-template-columns: 1fr; gap: 6px; }
+.menu-page .menu-item { align-items: baseline; gap: 8px; font-size: .98rem; }
+.menu-page .menu-item span:first-child { display: flex; align-items: baseline; flex: 1; }
+.menu-page .menu-item span:first-child::after { content: ""; flex: 1; border-bottom: 2px dotted var(--line); margin: 0 8px 4px; }
+.menu-page .menu-item span:last-child { font-size: 1rem; }
+.menu-page .menu-note { text-align: center; margin-top: 24px; }
+.menu-est { font-family: "Fraunces", serif; letter-spacing: .2em; color: var(--ink); opacity: .7; }
+.menu-body footer { padding-top: 0; }
 
 .menu {
   background: var(--white);

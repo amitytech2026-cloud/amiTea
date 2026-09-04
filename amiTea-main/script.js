@@ -124,9 +124,7 @@ document.addEventListener('click',e=>{
 
 // Fruit and tea combinations are restricted for Fruit & Tea drinks.
 function applyTeaRules(){
-  const restrictions=state.basetype==='mixed' && state.fruit
-    ? (state.fruit==='Strawberry' ? ['Black','Oolong'] : ['Oolong'])
-    : [];
+  const restrictions=[];
   document.querySelectorAll('.opt[data-group="tea"]').forEach(o=>{
     const disabled=restrictions.includes(o.dataset.val);
     o.classList.toggle('disabled',disabled);
@@ -194,13 +192,15 @@ function drinkUnitPrice(){
       basePrice+=1;
     }
   }else if(state.basetype==='fruit'){
-    basePrice=state.fruit==='Mango'?7:6;
+    basePrice=6;
     if(state.add==='Whole milk' || state.add==='2% milk') basePrice+=0.5;
     if(state.add==='Oat milk') basePrice+=1;
+    if(state.add==='Lemonade' || state.add==='Sparkling water') basePrice=7;
   }else{
     basePrice=7;
     if(state.add==='Whole milk' || state.add==='2% milk') basePrice+=0.5;
     if(state.add==='Oat milk') basePrice+=1;
+    if(state.add==='Lemonade' || state.add==='Sparkling water') basePrice=8;
   }
   return basePrice+state.bobaPrice;
 }
