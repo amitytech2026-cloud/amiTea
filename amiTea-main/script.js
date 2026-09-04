@@ -1,10 +1,49 @@
 const state={size:'16oz',temp:null,basetype:null,fruit:null,tea:null,add:null,boba:null,bobaPrice:0,qty:1};
 
-// Base drink prices for fruit and mixed drinks.
-const PRICE={
-  fruit:7,
-  mixed:8
-};
+const MENU=[
+  {
+    title:'Tea',
+    items:[
+      ['Black Tea · no add','$5'],
+      ['Oolong Tea · no add','$5'],
+      ['Black/Oolong Tea · Whole or 2% milk latte','$5.50'],
+      ['Black or Oolong · oat milk latte','$6.00'],
+      ['Black or Oolong · lemonade or sparkling water','$6.00'],
+      ['Matcha Tea · no add','$6.00'],
+      ['Matcha Tea · Whole or 2% milk latte','$6.50'],
+      ['Matcha · oat milk latte','$7.00'],
+      ['Matcha · lemonade or sparkling water','$7.00']
+    ]
+  },
+  {
+    title:'Fruit',
+    items:[
+      ['Strawberry Fruit','$6.00'],
+      ['Strawberry . Whole or 2% milk latte','$6.50'],
+      ['Strawberry . oat milk latte','$7.00'],
+      ['Blueberry Fruit','$6.00'],
+      ['Blueberry . Whole or 2% milk latte','$6.50'],
+      ['Blueberry . oat milk latte','$7.00'],
+      ['Mango Fruit','$7.00'],
+      ['Mango . Whole or 2% milk latte','$7.50'],
+      ['Mango . oat milk latte','$8.00']
+    ]
+  },
+  {
+    title:'Fruit & Tea',
+    items:[
+        ['Strawberry + Black/Oolong/Matcha Tea','$7.00'],
+        ['Strawberry + Black/Oolong/Matcha Tea . Whole or 2% milk latte','$7.50'],
+        ['Strawberry + Black/Oolong/Matcha Tea . oat milk latte','$8.00'],
+        ['Blueberry + Black/Oolong/Matcha Tea','$7.00'],
+        ['Blueberry + Black/Oolong/Matcha Tea . Whole or 2% milk latte','$7.50'],
+        ['Blueberry + Black/Oolong/Matcha Tea . oat milk latte','$8.00'],
+        ['Mango + Black/Oolong/Matcha Tea','$7.00'],
+        ['Mango + Black/Oolong/Matcha Tea . Whole or 2% milk latte','$7.50'],
+        ['Mango + Black/Oolong/Matcha Tea . oat milk latte','$8.00'],
+    ]
+  }
+];
 
 const cart=[];
 const REVIEW=5; // index of the review/checkout step
@@ -12,6 +51,19 @@ let current=0;
 let reached=0; // furthest step the customer has unlocked
 const panels=[...document.querySelectorAll('.panel')];
 const stepEls=[...document.querySelectorAll('#stepper .s')];
+
+function renderMenu(){
+  const menu=document.getElementById('menuGroups');
+  if(!menu) return;
+  menu.innerHTML=MENU.map(group=>`
+    <section class="menu-group">
+      <h3>${group.title}</h3>
+      <div class="menu-items">
+        ${group.items.map(item=>`<div class="menu-item"><span>${item[0]}</span><span>${item[1]}</span></div>`).join('')}
+      </div>
+    </section>`).join('')+
+    '<p class="menu-note">Whole milk and 2% milk add $0.50. Oat milk adds $1.00. Boba adds $0.75.</p>';
+}
 
 function showPanel(i){
   current=i;
@@ -131,10 +183,24 @@ document.getElementById('minus').onclick=()=>{if(state.qty>1){state.qty--;docume
 
 /* build a drink object */
 function drinkUnitPrice(){
-  let basePrice=PRICE[state.basetype];
+  let basePrice;
   if(state.basetype==='tea'){
-    if(state.add==='No add') basePrice=state.tea==='Matcha'?5:4.5;
-    else basePrice=6;
+    basePrice=state.tea==='Matcha'?6:5;
+    if(state.add==='Lemonade' || state.add==='Sparkling water'){
+      basePrice=state.tea==='Matcha'?7:6;
+    }else if(state.add==='Whole milk' || state.add==='2% milk'){
+      basePrice+=0.5;
+    }else if(state.add==='Oat milk'){
+      basePrice+=1;
+    }
+  }else if(state.basetype==='fruit'){
+    basePrice=state.fruit==='Mango'?7:6;
+    if(state.add==='Whole milk' || state.add==='2% milk') basePrice+=0.5;
+    if(state.add==='Oat milk') basePrice+=1;
+  }else{
+    basePrice=7;
+    if(state.add==='Whole milk' || state.add==='2% milk') basePrice+=0.5;
+    if(state.add==='Oat milk') basePrice+=1;
   }
   return basePrice+state.bobaPrice;
 }
@@ -349,4 +415,5 @@ document.getElementById('placeOrder').onclick=()=>{
 };
 
 /* initial state on load */
+renderMenu();
 renderSoFar();
