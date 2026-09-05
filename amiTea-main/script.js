@@ -172,8 +172,41 @@ function refreshNext(){
   if(btn && checks[current]) btn.disabled=!checks[current]();
 }
 
+function selectPresetOption(group,value){
+  const option=[...document.querySelectorAll(`.opt[data-group="${group}"]`)]
+    .find(opt=>opt.dataset.val===value);
+  if(option) option.click();
+}
+
+function applyMenuPreset(){
+  const menuItem=new URLSearchParams(window.location.search).get('menuItem');
+  if(!menuItem) return;
+
+  const item=menuItem.toLowerCase();
+  if(item.includes('fruit & tea') || item.includes(' + ')) selectPresetOption('basetype','mixed');
+  else if(item.includes('fruit')) selectPresetOption('basetype','fruit');
+  else selectPresetOption('basetype','tea');
+
+  if(item.includes('matcha') && !item.includes('black/oolong/matcha')) selectPresetOption('tea','Matcha');
+  else if(item.includes('oolong') && !item.includes('black')) selectPresetOption('tea','Oolong');
+  else if(item.includes('black') && !item.includes('oolong')) selectPresetOption('tea','Black');
+
+  if(item.includes('strawberry') && !item.includes('blueberry') && !item.includes('mango')) selectPresetOption('fruit','Strawberry');
+  else if(item.includes('blueberry') && !item.includes('strawberry') && !item.includes('mango')) selectPresetOption('fruit','Blueberry');
+  else if(item.includes('mango') && !item.includes('strawberry') && !item.includes('blueberry')) selectPresetOption('fruit','Mango');
+
+  if(item.includes('oat milk')) selectPresetOption('add','Oat milk');
+  else if(item.includes('whole milk')) selectPresetOption('add','Whole milk');
+  else if(item.includes('lemonade') && !item.includes('sparkling water')) selectPresetOption('add','Lemonade');
+  else if(item.includes('sparkling water') && !item.includes('lemonade')) selectPresetOption('add','Sparkling water');
+
+  showPanel(1);
+  refreshNext();
+}
+
 document.querySelectorAll('[data-next]').forEach(b=>b.addEventListener('click',()=>{showPanel(current+1);refreshNext();}));
 document.querySelectorAll('[data-back]').forEach(b=>b.addEventListener('click',()=>showPanel(current-1)));
+applyMenuPreset();
 
 /* quantity */
 document.getElementById('plus').onclick=()=>{state.qty++;document.getElementById('qtyNum').textContent=state.qty;};

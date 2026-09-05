@@ -37,7 +37,17 @@ menu.innerHTML=MENU.map(group=>`
   <section class="menu-group">
     <h3>${group.title}</h3>
     <div class="menu-items">
-      ${group.items.map(item=>`<div class="menu-item"><span>${item[0]}</span><span>${item[1]}</span></div>`).join('')}
+      ${group.items.map(item=>`<button type="button" class="menu-item" data-book-item="${item[0]}">
+        <span>${item[0]}</span><span>${item[1]}</span><span class="menu-book">Book</span>
+      </button>`).join('')}
     </div>
   </section>`).join('')+
   '<p class="menu-note">Whole milk and 2% milk add $0.50. Oat milk adds $1.00. Boba adds $0.75.</p>';
+
+menu.addEventListener('click', event=>{
+  const item=event.target.closest('[data-book-item]');
+  if(item){
+    const menuItem=encodeURIComponent(item.dataset.bookItem);
+    window.location.href=`index.html?menuItem=${menuItem}`;
+  }
+});

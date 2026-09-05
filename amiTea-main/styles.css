@@ -67,10 +67,13 @@ header img {
 .menu-page .menu-group h3 { display: flex; align-items: center; justify-content: center; gap: 22px; font-size: 1.2rem; margin: 0 0 10px; }
 .menu-page .menu-group h3::before, .menu-page .menu-group h3::after { content: ""; width: 64px; height: 2px; background: var(--gold); }
 .menu-page .menu-items { display: grid; grid-template-columns: 1fr; gap: 6px; }
-.menu-page .menu-item { align-items: baseline; gap: 8px; font-size: .98rem; }
+.menu-page .menu-item { width: 100%; border: 0; border-radius: 6px; background: transparent; padding: 6px 8px; align-items: baseline; gap: 8px; font: inherit; font-size: .98rem; text-align: left; color: var(--ink); cursor: pointer; transition: background .2s, color .2s; }
+.menu-page .menu-item:hover, .menu-page .menu-item:focus-visible { background: rgba(213, 154, 44, .12); color: var(--green-deep); }
+.menu-page .menu-item:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
 .menu-page .menu-item span:first-child { display: flex; align-items: baseline; flex: 1; }
 .menu-page .menu-item span:first-child::after { content: ""; flex: 1; border-bottom: 2px dotted var(--line); margin: 0 8px 4px; }
-.menu-page .menu-item span:last-child { font-size: 1rem; }
+.menu-page .menu-item span:nth-child(2) { font-size: 1rem; }
+.menu-page .menu-item .menu-book { color: var(--green); font-family: "Fraunces", serif; font-size: .85rem; font-weight: 700; white-space: nowrap; }
 .menu-page .menu-note { text-align: center; margin-top: 24px; }
 .menu-est { font-family: "Fraunces", serif; letter-spacing: .2em; color: var(--ink); opacity: .7; }
 .menu-body footer { padding-top: 0; }
