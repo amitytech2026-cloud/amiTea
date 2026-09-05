@@ -200,7 +200,7 @@ function applyMenuPreset(){
   else if(item.includes('lemonade') && !item.includes('sparkling water')) selectPresetOption('add','Lemonade');
   else if(item.includes('sparkling water') && !item.includes('lemonade')) selectPresetOption('add','Sparkling water');
 
-  showPanel(1);
+  showPanel(0);
   refreshNext();
 }
 
