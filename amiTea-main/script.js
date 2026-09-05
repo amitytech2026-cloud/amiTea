@@ -1,4 +1,6 @@
 const state={size:'16oz',temp:null,basetype:null,fruit:null,tea:null,add:null,boba:null,bobaPrice:0,qty:1};
+let menuTeaOptions=null;
+let menuAddOptions=null;
 
 const MENU=[
   {
@@ -8,11 +10,13 @@ const MENU=[
       ['Oolong Tea · no add','$5'],
       ['Black/Oolong Tea · Whole or 2% milk latte','$5.50'],
       ['Black or Oolong · oat milk latte','$6.00'],
-      ['Black or Oolong · lemonade or sparkling water','$6.00'],
+      ['Black or Oolong · lemonade','$6.00'],
+      ['Black or Oolong · sparkling water','$6.00'],
       ['Matcha Tea · no add','$6.00'],
       ['Matcha Tea · Whole or 2% milk latte','$6.50'],
       ['Matcha · oat milk latte','$7.00'],
-      ['Matcha · lemonade or sparkling water','$7.00']
+      ['Matcha · lemonade','$7.00'],
+      ['Matcha · sparkling water','$7.00']
     ]
   },
   {
@@ -45,8 +49,19 @@ const MENU=[
   }
 ];
 
-const cart=[];
-const REVIEW=5; // index of the review/checkout step
+localStorage.removeItem('amitea-sales');
+sessionStorage.removeItem('amitea-current-order');
+sessionStorage.removeItem('amitea-active-order-number');
+if(!localStorage.getItem('amitea-records-reset-v3')){
+  localStorage.removeItem('amitea-sales-v2');
+  sessionStorage.removeItem('amitea-current-order-v2');
+  sessionStorage.removeItem('amitea-active-order-number-v2');
+  localStorage.setItem('amitea-records-reset-v3','1');
+}
+const CART_KEY='amitea-current-order-v2';
+const ORDER_KEY='amitea-active-order-number-v2';
+const cart=JSON.parse(sessionStorage.getItem(CART_KEY)||'[]');
+const REVIEW=5; // index of the review and sale-record step
 let current=0;
 let reached=0; // furthest step the customer has unlocked
 const panels=[...document.querySelectorAll('.panel')];
@@ -88,6 +103,11 @@ function showReview(){
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
+document.getElementById('saleRecordAccess').addEventListener('click',()=>{
+  showReview();
+  openBookkeeping();
+});
+
 // let customers jump to any step they've already reached
 stepEls.forEach(s=>s.addEventListener('click',()=>{
   const target=+s.dataset.i;
@@ -103,28 +123,60 @@ document.addEventListener('click',e=>{
   document.querySelectorAll(`.opt[data-group="${g}"]`).forEach(o=>o.classList.remove('sel'));
   opt.classList.add('sel');
 
-  if(g==='temp'){state.temp=opt.dataset.val;}
+  if(g==='temp'){
+    state.temp=opt.dataset.val;
+    applyTemperatureRules();
+  }
   if(g==='basetype'){
-    state.basetype=opt.dataset.val;state.fruit=null;state.tea=null;
+    state.basetype=opt.dataset.val;state.fruit=null;state.tea=null;state.add=null;
     document.querySelectorAll('.opt[data-group="fruit"],.opt[data-group="tea"]').forEach(o=>o.classList.remove('sel'));
     const showFruit=state.basetype==='fruit'||state.basetype==='mixed';
     const showTea=state.basetype==='tea'||state.basetype==='mixed';
     document.getElementById('fruitBlock').style.display=showFruit?'block':'none';
     document.getElementById('teaBlock').style.display=showTea?'block':'none';
+    applyBaseRules();
     applyTeaRules();
+    applyMatchaRules();
   }
-  if(g==='fruit'){state.fruit=opt.dataset.val;applyTeaRules();}
-  if(g==='tea'){state.tea=opt.dataset.val;}
-  if(g==='add'){state.add=opt.dataset.val;}
+  if(g==='fruit'){
+    state.fruit=opt.dataset.val;
+    if(state.basetype!=='mixed'){
+      state.basetype='fruit';
+      state.tea=null;
+      document.querySelectorAll('.opt[data-group="tea"]').forEach(o=>o.classList.remove('sel'));
+    }
+    applyBaseRules();
+    applyTeaRules();
+    applyAddRules();
+  }
+  if(g==='tea'){
+    state.tea=opt.dataset.val;
+    if(state.basetype!=='mixed'){
+      state.basetype='tea';
+      state.fruit=null;
+      document.querySelectorAll('.opt[data-group="fruit"]').forEach(o=>o.classList.remove('sel'));
+    }
+    applyBaseRules();
+    applyTeaRules();
+    applyMatchaRules();
+  }
+  if(g==='add'){
+    state.add=opt.dataset.val;
+    applyAddRules();
+    applyTemperatureRules();
+  }
   if(g==='boba'){state.boba=opt.dataset.val;state.bobaPrice=+opt.dataset.price;}
 
   refreshNext();
   renderSoFar();
+    applyAddRules();
 });
 
 // Fruit and tea combinations are restricted for Fruit & Tea drinks.
 function applyTeaRules(){
-  const restrictions=[];
+  const restrictions=menuTeaOptions
+    ? ['Matcha'].filter(tea=>!menuTeaOptions.includes(tea))
+    : (state.tea==='Black'||state.tea==='Oolong' ? ['Matcha'] : []);
   document.querySelectorAll('.opt[data-group="tea"]').forEach(o=>{
     const disabled=restrictions.includes(o.dataset.val);
     o.classList.toggle('disabled',disabled);
@@ -132,6 +184,64 @@ function applyTeaRules(){
       state.tea=null;o.classList.remove('sel');
     }
   });
+}
+
+function applyBaseRules(){
+  document.querySelectorAll('.opt[data-group="basetype"]').forEach(option=>{
+    const disabled=!!state.basetype && option.dataset.val!==state.basetype;
+    option.classList.toggle('disabled',disabled);
+    option.disabled=disabled;
+    option.setAttribute('aria-disabled',String(disabled));
+  });
+}
+
+function applyMatchaRules(){
+  const addOptions=[...document.querySelectorAll('.opt[data-group="add"]')];
+  const teaOnly=state.basetype==='tea' && (state.tea==='Matcha'||((state.tea==='Black'||state.tea==='Oolong')&&!menuAddOptions));
+  if(teaOnly){
+    const noAdd=addOptions.find(option=>option.dataset.val==='No add');
+    if(noAdd){
+      state.add='No add';
+      noAdd.disabled=false;
+      noAdd.classList.remove('disabled');
+      noAdd.click();
+    }
+  }
+  applyAddRules();
+}
+
+function applyAddRules(){
+  const addOptions=[...document.querySelectorAll('.opt[data-group="add"]')];
+  const teaOnly=state.basetype==='tea' && (state.tea==='Matcha'||((state.tea==='Black'||state.tea==='Oolong')&&!menuAddOptions));
+  addOptions.forEach(option=>{
+    const allowed=menuAddOptions || (state.add ? [state.add] : null);
+    const disabled=teaOnly
+      ? option.dataset.val!=='No add'
+      : !!allowed && !allowed.includes(option.dataset.val);
+    option.classList.toggle('disabled',disabled);
+    option.disabled=disabled;
+    option.setAttribute('aria-disabled',String(disabled));
+  });
+}
+
+function applyTemperatureRules(){
+  const hot=document.querySelector('.opt[data-group="temp"][data-val="Hot"]');
+  const sparklingOption=document.querySelector('.opt[data-group="add"][data-val="Sparkling water"]');
+  if(!hot || !sparklingOption) return;
+  const sparkling=state.add==='Sparkling water';
+  const hotSelected=state.temp==='Hot';
+  hot.classList.toggle('disabled',sparkling);
+  hot.disabled=sparkling;
+  hot.setAttribute('aria-disabled',String(sparkling));
+  sparklingOption.classList.toggle('disabled',hotSelected);
+  sparklingOption.disabled=hotSelected;
+  sparklingOption.setAttribute('aria-disabled',String(hotSelected));
+  if(sparkling && state.temp!=='Iced') selectPresetOption('temp','Iced');
+  if(hotSelected && sparkling){
+    state.add=null;
+    sparklingOption.classList.remove('sel');
+    applyAddRules();
+  }
 }
 
 // build the "so far" chips from current choices; each chip jumps back to its step
@@ -183,8 +293,18 @@ function applyMenuPreset(){
   if(!menuItem) return;
 
   const item=menuItem.toLowerCase();
+  if(item.includes('whole or 2% milk')) menuAddOptions=['Whole milk','2% milk'];
+  else if(item.includes('oat milk')) menuAddOptions=['Oat milk'];
+  else if(item.includes('lemonade')) menuAddOptions=['Lemonade'];
+  else if(item.includes('sparkling water')) menuAddOptions=['Sparkling water'];
+  if(item.includes('black/oolong/matcha')) menuTeaOptions=['Black','Oolong','Matcha'];
+  else if(item.includes('black') && item.includes('oolong')) menuTeaOptions=['Black','Oolong'];
+  else if(item.includes('matcha')) menuTeaOptions=['Matcha'];
+  else if(item.includes('black')) menuTeaOptions=['Black'];
+  else if(item.includes('oolong')) menuTeaOptions=['Oolong'];
+  const hasFruit= item.includes('fruit') || item.includes('strawberry') || item.includes('blueberry') || item.includes('mango');
   if(item.includes('fruit & tea') || item.includes(' + ')) selectPresetOption('basetype','mixed');
-  else if(item.includes('fruit')) selectPresetOption('basetype','fruit');
+  else if(hasFruit) selectPresetOption('basetype','fruit');
   else selectPresetOption('basetype','tea');
 
   if(item.includes('matcha') && !item.includes('black/oolong/matcha')) selectPresetOption('tea','Matcha');
@@ -199,6 +319,8 @@ function applyMenuPreset(){
   else if(item.includes('whole milk')) selectPresetOption('add','Whole milk');
   else if(item.includes('lemonade') && !item.includes('sparkling water')) selectPresetOption('add','Lemonade');
   else if(item.includes('sparkling water') && !item.includes('lemonade')) selectPresetOption('add','Sparkling water');
+
+  applyTemperatureRules();
 
   showPanel(0);
   refreshNext();
@@ -253,53 +375,103 @@ function drinkDesc(){
   return bits.join(' · ');
 }
 function commitDrink(){
+  const orderNumber=ensureOrderNumber();
   const unit=drinkUnitPrice();
-  cart.push({name:drinkName(),desc:drinkDesc(),qty:state.qty,unit,total:unit*state.qty});
-  renderCart();
+  cart.push({orderNumber,name:drinkName(),desc:drinkDesc(),qty:state.qty,unit,total:unit*state.qty});
+  sessionStorage.setItem(CART_KEY,JSON.stringify(cart));
 }
 function resetBuilder(){
   Object.assign(state,{size:'16oz',temp:null,basetype:null,fruit:null,tea:null,add:null,boba:null,bobaPrice:0,qty:1});
+  menuTeaOptions=null;
+  menuAddOptions=null;
   document.querySelectorAll('.opt.sel').forEach(o=>o.classList.remove('sel'));
   document.getElementById('fruitBlock').style.display='none';
   document.getElementById('teaBlock').style.display='none';
   document.getElementById('qtyNum').textContent='1';
   panels.forEach(p=>{const b=p.querySelector('[data-next]');if(b)b.disabled=true;});
+  document.getElementById('addMore').disabled=false;
+  document.getElementById('orderMore2').disabled=false;
   reached=0;
+  applyBaseRules();
   applyTeaRules();
+  applyMatchaRules();
+  applyTemperatureRules();
   renderSoFar();
 }
 
 /* amount step actions */
-document.getElementById('addOrder').onclick=()=>{commitDrink();resetBuilder();renderReview();showReview();};
-document.getElementById('addMore').onclick=()=>{commitDrink();resetBuilder();showPanel(0);};
-document.getElementById('orderMore2').onclick=()=>{showPanel(0);};
+document.getElementById('addOrder').onclick=()=>{
+  const button=document.getElementById('addOrder');
+  if(button.disabled || !state.temp || !baseComplete() || !state.add || !state.boba) return;
+  commitDrink();
+  button.disabled=true;
+  resetBuilder();
+  renderReview();
+  showReview();
+};
+document.getElementById('addMore').onclick=()=>{
+  if(!state.temp || !baseComplete() || !state.add || !state.boba) return;
+  commitDrink();
+  resetBuilder();
+  document.getElementById('addOrder').disabled=false;
+  if(cart.length>=4){
+    renderReview();
+    showReview();
+  }else showPanel(0);
+};
+function startAnotherDrink(){
+  resetBuilder();
+  document.getElementById('addOrder').disabled=false;
+  showPanel(0);
+}
+document.getElementById('orderMore2').onclick=startAnotherDrink;
 
 /* cart + review */
 function money(n){return '$'+n.toFixed(2);}
 function cartTotal(){return cart.reduce((s,d)=>s+d.total,0);}
-function renderCart(){
-  const body=document.getElementById('cartBody');
-  if(!cart.length){body.innerHTML='<p class="cart-empty">No drinks yet — build one above.</p>';return;}
-  body.innerHTML=cart.map((d,i)=>`
-    <div class="cart-item">
-      <div>
-        <div class="ci-name">${d.qty}× ${d.name}</div>
-        <div class="ci-desc">${d.desc}</div>
-        <button class="rm" onclick="removeItem(${i})">remove</button>
-      </div>
-      <div class="ci-price">${money(d.total)}</div>
-    </div>`).join('')
-    +`<div class="cart-total"><span>Total</span><span>${money(cartTotal())}</span></div>`;
+const WI_TAX_MULTIPLIER=1.055;
+function orderTax(){return cartTotal()*(WI_TAX_MULTIPLIER-1);}
+function orderTotal(){return cartTotal()*WI_TAX_MULTIPLIER;}
+function formatOrderNumber(orderNumber){return `#${orderNumber}`;}
+function ensureOrderNumber(){
+  let orderNumber=Number(sessionStorage.getItem(ORDER_KEY));
+  if(orderNumber)return orderNumber;
+  const next=getSales().reduce((highest,sale)=>Math.max(highest,Number(sale.orderNumber)||0),0)+1;
+  sessionStorage.setItem(ORDER_KEY,String(next));
+  return next;
+}
+function activeOrderNumber(){return Number(sessionStorage.getItem(ORDER_KEY))||cart[0]?.orderNumber||null;}
+function renderReview(){
+  const list=document.getElementById('reviewList');
+  if(!cart.length){list.innerHTML='<p class="sub">Nothing here yet.</p>';return;}
+  list.innerHTML=`<div class="review-order"><div class="order-number">Order ${formatOrderNumber(activeOrderNumber())}</div>${cart.map((d,i)=>`
+      <div class="cart-item" style="background:var(--cream);color:var(--ink);">
+        <div>
+          <div class="ci-name" style="color:var(--green-deep)">${d.qty}× ${d.name}</div>
+          <div class="ci-desc" style="opacity:.7">${d.desc}</div>
+          <div class="review-qty" aria-label="Change number of cups">
+            <button type="button" aria-label="Remove one cup" onclick="changeReviewQty(${i},-1)"${d.qty===1?' disabled':''}>−</button>
+            <span>${d.qty} cup${d.qty===1?'':'s'}</span>
+            <button type="button" aria-label="Add one cup" onclick="changeReviewQty(${i},1)">+</button>
+          </div>
+          <button class="rm" style="color:var(--gold-deep)" onclick="removeItem(${i})">remove</button>
+        </div>
+        <div class="ci-price" style="color:var(--green-deep)">${money(d.total)}</div>
+      </div>`).join('')}
+      <div class="receipt-row" style="color:var(--green-deep);"><span>Subtotal</span><span>${money(cartTotal())}</span></div>
+      <div class="receipt-row" style="color:var(--green-deep);"><span>WI tax</span><span>${money(orderTax())}</span></div>
+      <div class="cart-total" style="color:var(--green-deep);border-top-color:var(--line);"><span>Total</span><span>${money(orderTotal())}</span></div>
+    </div>`;
 }
 function removeItem(i){
-  cart.splice(i,1);renderCart();renderReview();
-  // keep an open checkout form's total in sync
+  cart.splice(i,1);
+  sessionStorage.setItem(CART_KEY,JSON.stringify(cart));
+  renderReview();
+    // Clear any visible sale confirmation when the cart is emptied.
   if(!cart.length){
+    sessionStorage.removeItem(CART_KEY);
+    sessionStorage.removeItem(ORDER_KEY);
     document.getElementById('receiptArea').innerHTML='';
-    // close checkout form and restore buttons if the cart is now empty
-    if(coForm){coForm.hidden=true;coError.hidden=true;}
-    const cb=document.getElementById('checkout'),om=document.getElementById('orderMore2');
-    if(cb)cb.style.display='';if(om)om.style.display='';
     resetBuilder();showPanel(0);
   }
 }
@@ -308,145 +480,117 @@ function changeReviewQty(i, delta){
   if(!drink) return;
   drink.qty=Math.max(1,drink.qty+delta);
   drink.total=drink.unit*drink.qty;
-  renderCart();
+  sessionStorage.setItem(CART_KEY,JSON.stringify(cart));
   renderReview();
 }
-function renderReview(){
-  const list=document.getElementById('reviewList');
-  if(!cart.length){list.innerHTML='<p class="sub">Nothing here yet.</p>';return;}
-  list.innerHTML=cart.map((d,i)=>`
-    <div class="cart-item" style="background:var(--cream);color:var(--ink);">
-      <div>
-        <div class="ci-name" style="color:var(--green-deep)">${d.qty}× ${d.name}</div>
-        <div class="ci-desc" style="opacity:.7">${d.desc}</div>
-        <div class="review-qty" aria-label="Change number of cups">
-          <button type="button" aria-label="Remove one cup" onclick="changeReviewQty(${i},-1)"${d.qty===1?' disabled':''}>−</button>
-          <span>${d.qty} cup${d.qty===1?'':'s'}</span>
-          <button type="button" aria-label="Add one cup" onclick="changeReviewQty(${i},1)">+</button>
-        </div>
-        <button class="rm" style="color:var(--gold-deep)" onclick="removeItem(${i})">remove</button>
-      </div>
-      <div class="ci-price" style="color:var(--green-deep)">${money(d.total)}</div>
-    </div>`).join('')
-    +`<div class="cart-total" style="color:var(--green-deep);border-top-color:var(--line);"><span>Total</span><span>${money(cartTotal())}</span></div>`;
+/* local sales record and PIN-locked bookkeeping */
+const SALES_KEY='amitea-sales-v2';
+const BOOKKEEPING_PIN='226283';
+const bookkeepingPanel=document.getElementById('bookkeepingPanel');
+const bookkeepingLock=document.getElementById('bookkeepingLock');
+const bookkeepingContent=document.getElementById('bookkeepingContent');
+const bookkeepingPin=document.getElementById('bookkeepingPin');
+const bookkeepingError=document.getElementById('bookkeepingError');
+
+function getSales(){
+  try{return JSON.parse(localStorage.getItem(SALES_KEY)||'[]');}
+  catch{return []}
 }
-
-/* checkout */
-const coForm=document.getElementById('checkoutForm');
-const coError=document.getElementById('coError');
-
-document.getElementById('checkout').onclick=()=>{
-  if(!cart.length){
-    document.getElementById('receiptArea').innerHTML='<p class="thanks">Add a drink first 🍵</p>';
+function saveSale(){
+  const sales=getSales();
+  sales.unshift({id:Date.now(),orderNumber:activeOrderNumber(),createdAt:new Date().toISOString(),subtotal:cartTotal(),tax:orderTax(),total:orderTotal(),items:cart.map(d=>({name:d.name,desc:d.desc,qty:d.qty,total:d.total}))});
+  localStorage.setItem(SALES_KEY,JSON.stringify(sales));
+}
+function renderBookkeeping(){
+  const sales=getSales().sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
+  const total=sales.reduce((sum,sale)=>sum+sale.total,0);
+  document.getElementById('bookkeepingSummary').innerHTML=`<strong>${sales.length}</strong> sale${sales.length===1?'':'s'} · <strong>${money(total)}</strong> total`;
+  const groups=sales.reduce((byDate,sale)=>{
+    const date=new Date(sale.createdAt);
+    const key=date.toLocaleDateString();
+    (byDate[key] ||= []).push(sale);
+    return byDate;
+  },{});
+  document.getElementById('salesList').innerHTML=sales.length
+    ? Object.entries(groups).map(([date,dateSales])=>`
+      <section class="sales-date">
+        <h3>${date}</h3>
+        ${dateSales.map(sale=>`
+          <article class="sale-record">
+            <div class="sale-record-head"><strong>Order ${formatOrderNumber(sale.orderNumber)} · ${money(sale.total)}</strong><time>${new Date(sale.createdAt).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'})}</time></div>
+            <div class="sale-record-items">${sale.items.map(item=>`${item.qty}× ${item.name}`).join(' · ')}</div>
+          </article>`).join('')}
+      </section>`).join('')
+    : '<p class="sub">No sales recorded yet.</p>';
+}
+function openBookkeeping(){
+  bookkeepingPanel.hidden=false;
+  bookkeepingLock.hidden=false;
+  bookkeepingContent.hidden=true;
+  bookkeepingError.hidden=true;
+  bookkeepingPin.value='';
+  bookkeepingPanel.scrollIntoView({behavior:'smooth',block:'start'});
+  bookkeepingPin.focus();
+}
+document.getElementById('unlockBookkeeping').onclick=()=>{
+  const entered=bookkeepingPin.value.trim();
+  if(entered!==BOOKKEEPING_PIN){
+    bookkeepingError.textContent='Incorrect PIN.';
+    bookkeepingError.hidden=false;
+    bookkeepingPin.select();
+    return;
+  }
+  bookkeepingError.hidden=true;
+  bookkeepingLock.hidden=true;
+  bookkeepingContent.hidden=false;
+  renderBookkeeping();
+};
+bookkeepingPin.addEventListener('keydown',event=>{if(event.key==='Enter')document.getElementById('unlockBookkeeping').click();});
+document.getElementById('lockBookkeeping').onclick=()=>{
+  bookkeepingContent.hidden=true;
+  bookkeepingLock.hidden=false;
+  bookkeepingPin.value='';
+  bookkeepingPin.focus();
+};
+document.getElementById('emailBookkeeping').onclick=()=>{
+  const sales=getSales().sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
+  const body=sales.length
+    ? sales.map(sale=>{
+        const date=new Date(sale.createdAt).toLocaleString();
+        const items=sale.items.map(item=>`${item.qty}x ${item.name}`).join(', ');
+        return `Order ${formatOrderNumber(sale.orderNumber)} | ${date} | ${items} | Total ${money(sale.total)}`;
+      }).join('\n')
+    : 'No sales recorded yet.';
+  const subject=encodeURIComponent('amiTEA sales records');
+  const message=encodeURIComponent(`amiTEA sales records\n\n${body}`);
+  window.location.href=`mailto:support@amiteatea.com?subject=${subject}&body=${message}`;
+};
+document.getElementById('recordSale').onclick=()=>{
+  if(!cart.length)return;
+  saveSale();
+  const total=cartTotal();
+  cart.length=0;
+  sessionStorage.removeItem(CART_KEY);
+  sessionStorage.removeItem(ORDER_KEY);
+  renderReview();
+  document.getElementById('receiptArea').innerHTML=`<div class="receipt"><h4>Sale recorded</h4><div class="receipt-row"><span>Subtotal</span><span>${money(total)}</span></div><div class="receipt-row"><span>WI tax</span><span>${money(total*(WI_TAX_MULTIPLIER-1))}</span></div><div class="receipt-row"><span>Total to charge in Jim.com</span><strong>${money(total*WI_TAX_MULTIPLIER)}</strong></div><p class="thanks">This sale is saved in Bookkeeping.</p></div>`;
+  resetBuilder();
+  showReview();
+};
+document.getElementById('endOrder').onclick=()=>{
+  if(cart.length){
+    document.getElementById('receiptArea').innerHTML='<p class="co-error">Record the sale before ending this order.</p>';
     return;
   }
   document.getElementById('receiptArea').innerHTML='';
-  coForm.hidden=false;
-  // hide the pre-form buttons while paying
-  document.getElementById('checkout').style.display='none';
-  document.getElementById('orderMore2').style.display='none';
-  document.getElementById('orderName').focus();
-  coForm.scrollIntoView({behavior:'smooth',block:'nearest'});
-};
-
-document.getElementById('coCancel').onclick=()=>{
-  coForm.hidden=true;
-  coError.hidden=true;
-  document.getElementById('checkout').style.display='';
-  document.getElementById('orderMore2').style.display='';
-};
-
-/* contact method toggle (email / text) */
-let contactMethod='email';
-const emailWrap=document.getElementById('emailWrap');
-const phoneWrap=document.getElementById('phoneWrap');
-document.querySelectorAll('#contactToggle .seg-btn').forEach(btn=>{
-  btn.addEventListener('click',()=>{
-    contactMethod=btn.dataset.contact;
-    document.querySelectorAll('#contactToggle .seg-btn').forEach(b=>b.classList.toggle('on',b===btn));
-    emailWrap.hidden=contactMethod!=='email';
-    phoneWrap.hidden=contactMethod!=='phone';
-    document.getElementById(contactMethod==='email'?'contactEmail':'contactPhone').focus();
-  });
-});
-document.getElementById('contactPhone').addEventListener('input',e=>{
-  let v=e.target.value.replace(/\D/g,'').slice(0,10);
-  if(v.length>6) v=`(${v.slice(0,3)}) ${v.slice(3,6)}-${v.slice(6)}`;
-  else if(v.length>3) v=`(${v.slice(0,3)}) ${v.slice(3)}`;
-  else if(v.length) v=`(${v}`;
-  e.target.value=v;
-});
-
-function markBad(el,bad){el.classList.toggle('bad',bad);return bad;}
-
-document.getElementById('placeOrder').onclick=()=>{
-  const name=document.getElementById('orderName');
-
-  // validate
-  let firstBad=null;
-  const bad=(el,cond)=>{if(markBad(el,cond)&&!firstBad)firstBad=el;return cond;};
-  const nameBad=bad(name,name.value.trim().length===0);
-
-  // contact: validate the active method
-  const emailEl=document.getElementById('contactEmail');
-  const phoneEl=document.getElementById('contactPhone');
-  const emailVal=emailEl.value.trim();
-  const phoneDigits=phoneEl.value.replace(/\D/g,'');
-  let contactBad=false, contactValue='';
-  if(contactMethod==='email'){
-    contactBad=bad(emailEl,!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailVal));
-    contactValue=emailVal;
-    markBad(phoneEl,false);
-  }else{
-    contactBad=bad(phoneEl,phoneDigits.length!==10);
-    contactValue=phoneEl.value.trim();
-    markBad(emailEl,false);
-  }
-
-  if(nameBad||contactBad){
-    coError.textContent = nameBad
-      ? "Please enter a name for the order."
-      : (contactMethod==='email' ? "Please enter a valid email address." : "Please enter a valid 10-digit phone number.");
-    coError.hidden=false;
-    if(firstBad) firstBad.focus();
-    return;
-  }
-  coError.hidden=true;
-
-  // success — build receipt
-  const orderName=name.value.trim();
-  const sentWord=contactMethod==='email'?'Emailed to':'Texted to';
-  const subject=encodeURIComponent('amiTEA order confirmation');
-  const message=encodeURIComponent(`Order confirmed for ${orderName}. Total: ${money(cartTotal())}.`);
-  const confirmationHref=contactMethod==='email'
-    ? `mailto:${contactValue}?subject=${subject}&body=${message}`
-    : `sms:${phoneDigits}?body=${message}`;
-  const rows=cart.map(d=>`<div class="receipt-row"><span>${d.qty}× ${d.name}</span><span>${money(d.total)}</span></div>`).join('');
-  coForm.hidden=true;
-  document.getElementById('receiptArea').innerHTML=`
-    <div class="receipt">
-      <h4>Order confirmed — ${orderName}</h4>
-      ${rows}
-      <div class="receipt-row" style="font-weight:700;"><span>Order total</span><span>${money(cartTotal())}</span></div>
-      <div class="receipt-row" style="opacity:.7;"><span>Confirmation</span><span>${sentWord} ${contactValue}</span></div>
-      <div class="receipt-actions">
-        <a class="btn primary" href="${confirmationHref}">${contactMethod==='email'?'Send email':'Send text'}</a>
-        <button class="btn ghost" id="backToMenu">Back to Menu</button>
-      </div>
-    </div>
-    <p class="thanks">Thanks, ${orderName} — use the button above to send your confirmation 💛💚</p>`;
-  document.getElementById('backToMenu').onclick=()=>{
-    cart.length=0;
-    renderCart();
-    document.getElementById('receiptArea').innerHTML='';
-    document.getElementById('checkout').style.display='';
-    document.getElementById('orderMore2').style.display='';
-    resetBuilder();
-    showPanel(0);
-  };
-  document.getElementById('receiptArea').scrollIntoView({behavior:'smooth',block:'nearest'});
+  resetBuilder();
+  document.getElementById('addOrder').disabled=false;
+  showPanel(0);
 };
 
 /* initial state on load */
 renderMenu();
+renderReview();
+applyTemperatureRules();
 renderSoFar();
+if(new URLSearchParams(window.location.search).get('bookkeeping')==='1')openBookkeeping();

@@ -6,10 +6,12 @@ const MENU=[
       ['Matcha Tea','$6.00'],
       ['Black or Oolong · whole or 2% milk latte','$5.50'],
       ['Black or Oolong · oat milk latte','$6.00'],
-      ['Black or Oolong · lemonade or sparkling water','$6.00'],
+      ['Black or Oolong · lemonade','$6.00'],
+      ['Black or Oolong · sparkling water','$6.00'],
       ['Matcha · whole or 2% milk latte','$6.50'],
       ['Matcha · oat milk latte','$7.00'],
-      ['Matcha · lemonade or sparkling water','$7.00']
+      ['Matcha · lemonade','$7.00'],
+      ['Matcha · sparkling water','$7.00']
     ]
   },
   {
@@ -18,7 +20,8 @@ const MENU=[
       ['Strawberry/Blueberry/Mango','$6.00'],
       ['Strawberry/Blueberry/Mango · whole or 2% milk latte','$6.50'],
       ['Strawberry/Blueberry/Mango · oat milk latte','$7.00'],
-      ['Strawberry/Blueberry/Mango · lemonade or sparkling water','$7.00']
+      ['Strawberry/Blueberry/Mango · lemonade','$7.00'],
+      ['Strawberry/Blueberry/Mango · sparkling water','$7.00']
     ]
   },
   {
@@ -27,7 +30,8 @@ const MENU=[
       ['Strawberry/Blueberry/Mango + Black/Oolong/Matcha Tea','$7.00'],
       ['Fruit + tea · whole or 2% milk latte','$7.50'],
       ['Fruit + tea · oat milk latte','$8.00'],
-      ['Strawberry/Blueberry/Mango + Matcha · lemonade or sparkling water','$8.00']
+      ['Strawberry/Blueberry/Mango + Matcha · lemonade','$8.00'],
+      ['Strawberry/Blueberry/Mango + Matcha · sparkling water','$8.00']
     ]
   }
 ];
@@ -37,8 +41,8 @@ menu.innerHTML=MENU.map(group=>`
   <section class="menu-group">
     <h3>${group.title}</h3>
     <div class="menu-items">
-      ${group.items.map(item=>`<button type="button" class="menu-item" data-book-item="${item[0]}">
-        <span>${item[0]}</span><span>${item[1]}</span><span class="menu-book">Book</span>
+        ${group.items.map(item=>`<button type="button" class="menu-item" data-book-item="${item[0]}">
+        <span>${item[0]}</span><span>${item[1]}</span>
       </button>`).join('')}
     </div>
   </section>`).join('')+

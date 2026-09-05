@@ -73,7 +73,6 @@ header img {
 .menu-page .menu-item span:first-child { display: flex; align-items: baseline; flex: 1; }
 .menu-page .menu-item span:first-child::after { content: ""; flex: 1; border-bottom: 2px dotted var(--line); margin: 0 8px 4px; }
 .menu-page .menu-item span:nth-child(2) { font-size: 1rem; }
-.menu-page .menu-item .menu-book { color: var(--green); font-family: "Fraunces", serif; font-size: .85rem; font-weight: 700; white-space: nowrap; }
 .menu-page .menu-note { text-align: center; margin-top: 24px; }
 .menu-est { font-family: "Fraunces", serif; letter-spacing: .2em; color: var(--ink); opacity: .7; }
 .menu-body footer { padding-top: 0; }
@@ -137,6 +136,7 @@ header img {
 .steps .s.done { opacity: .9; color: var(--gold-deep); }
 .steps .s.done .n { background: var(--gold); color: var(--white); border-color: var(--gold); }
 .steps .arw { color: var(--line); align-self: center; }
+.sale-record-link { display: flex; justify-content: center; margin: 0 auto 8px; }
 
 .panel {
   background: var(--white);
@@ -268,9 +268,11 @@ header img {
   border-radius: 20px;
   padding: 22px 22px 24px;
 }
-.cart h3 { font-family: "Fraunces", serif; margin: 0 0 14px; font-size: 1.25rem; display: flex; align-items: center; gap: 8px; }
+.cart h3 { font-family: "Fraunces", serif; margin: 0; font-size: 1.25rem; display: flex; align-items: center; gap: 8px; }
 .cart-empty { opacity: .7; font-size: .9rem; }
 .cart-item { background: rgba(255, 255, 255, .08); border-radius: 12px; padding: 12px 14px; margin-bottom: 10px; display: flex; justify-content: space-between; gap: 10px; }
+.review-order { display: flow-root; }
+.order-number { font-family: "Fraunces", serif; font-weight: 700; color: var(--gold); margin: 0 0 10px; }
 .cart-item .ci-name { font-family: "Fraunces", serif; font-weight: 600; }
 .cart-item .ci-desc { font-size: .8rem; opacity: .82; margin-top: 3px; line-height: 1.4; }
 .cart-item .ci-price { font-family: "Fraunces", serif; font-weight: 700; white-space: nowrap; }
@@ -290,7 +292,6 @@ header img {
 .thanks { text-align: center; padding: 14px; font-family: "Fraunces", serif; color: var(--gold-deep); font-style: italic; }
 .receipt-actions { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
 
-#checkoutForm { margin-top: 22px; border-top: 1.5px dashed var(--line); padding-top: 20px; animation: rise .3s ease; }
 .co-block { margin-bottom: 22px; }
 .co-hint { margin: 2px 0 12px; font-size: .85rem; opacity: .68; }
 .fl { display: block; font-family: "Fraunces", serif; font-weight: 600; font-size: .85rem; color: var(--green-deep); margin-bottom: 12px; }
@@ -303,6 +304,27 @@ header img {
 .seg-btn { font: inherit; font-weight: 600; font-family: "Fraunces", serif; font-size: .9rem; border: none; background: none; color: var(--ink); cursor: pointer; padding: 8px 22px; border-radius: 9px; transition: .15s; }
 .seg-btn.on { background: var(--green); color: var(--white); }
 .seg-btn:not(.on):hover { color: var(--green); }
+.bookkeeping { display: block; margin-top: 26px; border-top: 1px dashed var(--line); padding-top: 24px; }
+.bookkeeping-summary { background: var(--cream-2); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; margin: 16px 0 10px; color: var(--green-deep); }
+.pin-field { max-width: 220px; margin: 12px 0; }
+.sale-record { border-top: 1px dashed var(--line); padding: 12px 0; }
+.sale-record-head { display: flex; justify-content: space-between; gap: 12px; color: var(--green-deep); }
+.sale-record-head time { font-size: .78rem; opacity: .7; text-align: right; }
+.sale-record-items { font-size: .85rem; opacity: .75; margin-top: 4px; }
+.sales-date { margin-top: 18px; }
+.sales-date h3 { font-family: "Fraunces", serif; color: var(--green); font-size: 1rem; margin: 0; padding-bottom: 4px; border-bottom: 2px solid var(--gold); }
+.bookkeeping-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 18px; }
+
+@media print {
+  body { background: #fff; }
+  body > *:not(.wrap), .wrap > *:not([data-panel="5"]) { display: none !important; }
+  .wrap { max-width: none; padding: 0; }
+  [data-panel="5"] { display: block !important; border: 0; box-shadow: none; margin: 0; padding: 0; }
+  [data-panel="5"] > *:not(#bookkeepingPanel) { display: none !important; }
+  #bookkeepingPanel { display: block !important; margin: 0; padding: 0; }
+  #bookkeepingLock, #lockBookkeeping, #emailBookkeeping { display: none !important; }
+  .bookkeeping-summary, .sale-record, .sales-date h3 { break-inside: avoid; }
+}
 
 footer { text-align: center; padding: 20px; font-size: .85rem; color: var(--green); opacity: .8; }
 .sofar { background: var(--cream-2); border: 1.5px dashed var(--line); border-radius: 16px; padding: 14px 18px; margin: 0 0 22px; display: flex; flex-wrap: wrap; align-items: center; gap: 10px; animation: rise .3s ease; }

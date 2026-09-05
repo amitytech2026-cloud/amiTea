@@ -34,8 +34,6 @@
     <button type="button" class="s" data-i="3"><span class="n">4</span>Boba</button>
     <span class="arw">→</span>
     <button type="button" class="s" data-i="4"><span class="n">5</span>Amount</button>
-    <span class="arw">→</span>
-    <button type="button" class="s" data-i="5"><span class="n">6</span>Review</button>
   </div>
 
   <!-- Running summary of choices made so far -->
@@ -143,62 +141,50 @@
     <div class="nav">
       <button class="btn ghost" data-back>Back</button>
       <div class="btn-row">
-        <button class="btn ghost" id="addMore">Add &amp; order more</button>
-        <button class="btn gold" id="addOrder">Add to order</button>
+        <button type="button" class="btn ghost" id="addMore">Add &amp; order more</button>
+        <button type="button" class="btn gold" id="addOrder">Add to order</button>
       </div>
     </div>
   </section>
 
-  <!-- STEP 6: REVIEW / CHECKOUT -->
+  <!-- STEP 6: REVIEW / SALES RECORD -->
   <section class="panel" data-panel="5">
-    <span class="step-tag">Step 6</span>
-    <h2>Review &amp; check out</h2>
-    <p class="sub">Your drinks so far.</p>
+    <h2>Review &amp; record sale</h2>
+    <p class="sub">Charge the total in Jim.com, then save this sale.</p>
     <div id="reviewList"></div>
     <div class="nav">
-      <button class="btn ghost" id="orderMore2">+ Add another drink</button>
-      <button class="btn gold" id="checkout">Check out</button>
-    </div>
-
-    <!-- Checkout form (hidden until Check out is pressed) -->
-    <div id="checkoutForm" hidden>
-      <div class="co-block">
-        <div class="subhead">Order name</div>
-        <p class="co-hint">We'll call this name when your order is ready.</p>
-        <input class="field" id="orderName" type="text" autocomplete="name" placeholder="e.g. Jamie" maxlength="40">
+      <div class="btn-row">
+        <button type="button" class="btn ghost" id="orderMore2">+ Add &amp; order more</button>
+        <button type="button" class="btn ghost" id="endOrder">End order</button>
       </div>
-
-      <div class="co-block">
-        <div class="subhead">Send my confirmation</div>
-        <p class="co-hint">Where should we send your order confirmation?</p>
-        <div class="seg" id="contactToggle">
-          <button type="button" class="seg-btn on" data-contact="email">Email</button>
-          <button type="button" class="seg-btn" data-contact="phone">Text</button>
-        </div>
-        <label class="fl" id="emailWrap">Email address
-          <input class="field" id="contactEmail" type="email" autocomplete="email" placeholder="you@example.com">
-        </label>
-        <label class="fl" id="phoneWrap" hidden>Phone number
-          <input class="field" id="contactPhone" type="tel" inputmode="tel" autocomplete="tel" placeholder="(555) 123-4567" maxlength="16">
-        </label>
-      </div>
-
-      <p class="co-error" id="coError" hidden></p>
-      <div class="nav">
-        <button class="btn ghost" id="coCancel">Back to order</button>
-        <button class="btn gold" id="placeOrder">Place order</button>
-      </div>
+      <button class="btn gold" id="recordSale">Record sale</button>
     </div>
 
     <div id="receiptArea"></div>
+    <section class="bookkeeping" id="bookkeepingPanel" hidden>
+      <span class="step-tag">Sales record</span>
+      <h2>Bookkeeping</h2>
+      <div id="bookkeepingLock">
+        <p class="sub">Enter your PIN to view recorded sales.</p>
+        <input class="field pin-field" id="bookkeepingPin" type="password" inputmode="numeric" autocomplete="off" maxlength="6" placeholder="PIN">
+        <p class="co-error" id="bookkeepingError" hidden></p>
+        <button class="btn primary" id="unlockBookkeeping" type="button">Unlock records</button>
+      </div>
+      <div id="bookkeepingContent" hidden>
+        <div class="bookkeeping-summary" id="bookkeepingSummary"></div>
+        <div id="salesList"></div>
+        <div class="bookkeeping-actions">
+          <button class="btn ghost" id="emailBookkeeping" type="button">Email records</button>
+          <button class="btn ghost" id="lockBookkeeping" type="button">Lock records</button>
+        </div>
+      </div>
+    </section>
   </section>
 
-  <!-- Cart -->
-  <div class="cart">
-    <h3>🧾 Your order</h3>
-    <div id="cartBody"><p class="cart-empty">No drinks yet — build one above.</p></div>
-  </div>
+</div>
 
+<div class="sale-record-link">
+  <button type="button" class="btn ghost" id="saleRecordAccess">Sale records</button>
 </div>
 
 <footer>
