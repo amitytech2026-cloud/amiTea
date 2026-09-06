@@ -311,6 +311,11 @@ header img {
 .sale-record-head { display: flex; justify-content: space-between; gap: 12px; color: var(--green-deep); }
 .sale-record-head time { font-size: .78rem; opacity: .7; text-align: right; }
 .sale-record-items { font-size: .85rem; opacity: .75; margin-top: 4px; }
+.sale-record-finance { display: grid; gap: 4px; margin-top: 10px; padding: 10px 12px; background: var(--cream); border-radius: 8px; font-size: .82rem; }
+.sale-record-finance > div { display: flex; justify-content: space-between; gap: 12px; border-bottom: 1px dotted var(--line); padding: 3px 0; }
+.sale-record-finance > div:last-child { border-bottom: 0; }
+.sale-record-finance strong { color: var(--green-deep); white-space: nowrap; }
+.sale-record-finance .finance-total { border-top: 1px solid var(--line); padding-top: 7px; font-size: .9rem; }
 .sales-date { margin-top: 18px; }
 .sales-date h3 { font-family: "Fraunces", serif; color: var(--green); font-size: 1rem; margin: 0; padding-bottom: 4px; border-bottom: 2px solid var(--gold); }
 .bookkeeping-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 18px; }

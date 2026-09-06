@@ -2,6 +2,12 @@ const state={size:'16oz',temp:null,basetype:null,fruit:null,tea:null,add:null,bo
 let menuTeaOptions=null;
 let menuAddOptions=null;
 
+const DANE_COUNTY_TAX_RATE=0.055;
+const JIM_PROCESSING_RATE=0.0199;
+const JIM_PROCESSING_FLAT_FEE=0.30;
+const SELF_EMPLOYMENT_TAX_RATE=0.153;
+const ESTIMATED_INCOME_TAX_RATE=0.22;
+
 const MENU=[
   {
     title:'Tea',
@@ -429,9 +435,18 @@ document.getElementById('orderMore2').onclick=startAnotherDrink;
 /* cart + review */
 function money(n){return '$'+n.toFixed(2);}
 function cartTotal(){return cart.reduce((s,d)=>s+d.total,0);}
-const WI_TAX_MULTIPLIER=1.055;
-function orderTax(){return cartTotal()*(WI_TAX_MULTIPLIER-1);}
-function orderTotal(){return cartTotal()*WI_TAX_MULTIPLIER;}
+function calculateBreakdown(basePrice=cartTotal()){
+  const salesTax=basePrice*DANE_COUNTY_TAX_RATE;
+  const customerTotal=basePrice+salesTax;
+  const jimFee=customerTotal*JIM_PROCESSING_RATE+JIM_PROCESSING_FLAT_FEE;
+  const netCashRevenue=customerTotal-jimFee-salesTax;
+  const selfEmploymentTax=netCashRevenue*SELF_EMPLOYMENT_TAX_RATE;
+  const estimatedIncomeTax=netCashRevenue*ESTIMATED_INCOME_TAX_RATE;
+  return {basePrice,salesTax,customerTotal,jimFee,netCashRevenue,selfEmploymentTax,estimatedIncomeTax,finalNetProfit:netCashRevenue-selfEmploymentTax-estimatedIncomeTax};
+}
+function orderBreakdown(){return calculateBreakdown();}
+function orderTax(){return orderBreakdown().salesTax;}
+function orderTotal(){return orderBreakdown().customerTotal;}
 function formatOrderNumber(orderNumber){return `#${orderNumber}`;}
 function ensureOrderNumber(){
   let orderNumber=Number(sessionStorage.getItem(ORDER_KEY));
@@ -444,6 +459,7 @@ function activeOrderNumber(){return Number(sessionStorage.getItem(ORDER_KEY))||c
 function renderReview(){
   const list=document.getElementById('reviewList');
   if(!cart.length){list.innerHTML='<p class="sub">Nothing here yet.</p>';return;}
+  const breakdown=orderBreakdown();
   list.innerHTML=`<div class="review-order"><div class="order-number">Order ${formatOrderNumber(activeOrderNumber())}</div>${cart.map((d,i)=>`
       <div class="cart-item" style="background:var(--cream);color:var(--ink);">
         <div>
@@ -458,9 +474,9 @@ function renderReview(){
         </div>
         <div class="ci-price" style="color:var(--green-deep)">${money(d.total)}</div>
       </div>`).join('')}
-      <div class="receipt-row" style="color:var(--green-deep);"><span>Subtotal</span><span>${money(cartTotal())}</span></div>
-      <div class="receipt-row" style="color:var(--green-deep);"><span>WI tax</span><span>${money(orderTax())}</span></div>
-      <div class="cart-total" style="color:var(--green-deep);border-top-color:var(--line);"><span>Total</span><span>${money(orderTotal())}</span></div>
+      <div class="receipt-row" style="color:var(--green-deep);"><span>Base price</span><span>${money(breakdown.basePrice)}</span></div>
+      <div class="receipt-row" style="color:var(--green-deep);"><span>Dane County sales tax (5.5%)</span><span>${money(breakdown.salesTax)}</span></div>
+      <div class="cart-total" style="color:var(--green-deep);border-top-color:var(--line);"><span>Total customer pays</span><span>${money(breakdown.customerTotal)}</span></div>
     </div>`;
 }
 function removeItem(i){
@@ -498,13 +514,16 @@ function getSales(){
 }
 function saveSale(){
   const sales=getSales();
-  sales.unshift({id:Date.now(),orderNumber:activeOrderNumber(),createdAt:new Date().toISOString(),subtotal:cartTotal(),tax:orderTax(),total:orderTotal(),items:cart.map(d=>({name:d.name,desc:d.desc,qty:d.qty,total:d.total}))});
+  const breakdown=orderBreakdown();
+  sales.unshift({id:Date.now(),orderNumber:activeOrderNumber(),createdAt:new Date().toISOString(),...breakdown,subtotal:breakdown.basePrice,tax:breakdown.salesTax,total:breakdown.customerTotal,items:cart.map(d=>({name:d.name,desc:d.desc,qty:d.qty,total:d.total}))});
   localStorage.setItem(SALES_KEY,JSON.stringify(sales));
 }
 function renderBookkeeping(){
   const sales=getSales().sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
-  const total=sales.reduce((sum,sale)=>sum+sale.total,0);
-  document.getElementById('bookkeepingSummary').innerHTML=`<strong>${sales.length}</strong> sale${sales.length===1?'':'s'} · <strong>${money(total)}</strong> total`;
+  const totals=sales.reduce((sum,sale)=>({
+    customerTotal:sum.customerTotal+(Number(sale.customerTotal??sale.total)||0)
+  }),{customerTotal:0});
+  document.getElementById('bookkeepingSummary').innerHTML=`<strong>${sales.length}</strong> sale${sales.length===1?'':'s'} · <strong>${money(totals.customerTotal)}</strong> customer payments`;
   const groups=sales.reduce((byDate,sale)=>{
     const date=new Date(sale.createdAt);
     const key=date.toLocaleDateString();
@@ -517,8 +536,19 @@ function renderBookkeeping(){
         <h3>${date}</h3>
         ${dateSales.map(sale=>`
           <article class="sale-record">
-            <div class="sale-record-head"><strong>Order ${formatOrderNumber(sale.orderNumber)} · ${money(sale.total)}</strong><time>${new Date(sale.createdAt).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'})}</time></div>
+            <div class="sale-record-head"><strong>Order ${formatOrderNumber(sale.orderNumber)} · ${money(sale.customerTotal??sale.total)}</strong><time>${new Date(sale.createdAt).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'})}</time></div>
             <div class="sale-record-items">${sale.items.map(item=>`${item.qty}× ${item.name}`).join(' · ')}</div>
+            <div class="sale-record-finance">
+              <div><span>Base Price</span><strong>${money(sale.basePrice??sale.subtotal)}</strong></div>
+              <div><span>Dane County sales tax</span><strong>${money(sale.salesTax??sale.tax)}</strong></div>
+              <div><span>Total customer pays</span><strong>${money(sale.customerTotal??sale.total)}</strong></div>
+              <div><span>Jim.com fee</span><strong>${money(sale.jimFee||0)}</strong></div>
+              <div><span>Sales tax sent to WI</span><strong>${money(sale.salesTax??sale.tax)}</strong></div>
+              <div><span>amiTEA net cash revenue</span><strong>${money(sale.netCashRevenue||0)}</strong></div>
+              <div><span>Self-employment tax (est.)</span><strong>${money(sale.selfEmploymentTax||0)}</strong></div>
+              <div><span>Est. federal income tax</span><strong>${money(sale.estimatedIncomeTax||0)}</strong></div>
+              <div class="finance-total"><span>amiTEA Final net profit</span><strong>${money(sale.finalNetProfit||0)}</strong></div>
+            </div>
           </article>`).join('')}
       </section>`).join('')
     : '<p class="sub">No sales recorded yet.</p>';
@@ -554,26 +584,44 @@ document.getElementById('lockBookkeeping').onclick=()=>{
 };
 document.getElementById('emailBookkeeping').onclick=()=>{
   const sales=getSales().sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
+  if(!sales.length)return;
   const body=sales.length
     ? sales.map(sale=>{
         const date=new Date(sale.createdAt).toLocaleString();
-        const items=sale.items.map(item=>`${item.qty}x ${item.name}`).join(', ');
-        return `Order ${formatOrderNumber(sale.orderNumber)} | ${date} | ${items} | Total ${money(sale.total)}`;
-      }).join('\n')
+        const items=sale.items.map(item=>`  ${item.qty} x ${item.name}`).join('\n');
+        return `ORDER ${formatOrderNumber(sale.orderNumber)}
+Date: ${date}
+
+Items:
+${items}
+
+Base Price: ${money(sale.basePrice??sale.subtotal)}
+Dane County sales tax: ${money(sale.salesTax??sale.tax)}
+Total customer pays: ${money(sale.customerTotal??sale.total)}
+Jim.com fee: ${money(sale.jimFee||0)}
+Sales tax sent to WI: ${money(sale.salesTax??sale.tax)}
+amiTEA net cash revenue: ${money(sale.netCashRevenue||0)}
+Self-employment tax (estimated): ${money(sale.selfEmploymentTax||0)}
+Estimated federal income tax: ${money(sale.estimatedIncomeTax||0)}
+amiTEA Final net profit: ${money(sale.finalNetProfit||0)}`;
+      }).join('\n\n------------------------------\n\n')
     : 'No sales recorded yet.';
+  if(!window.confirm('This will open an email draft and permanently delete all saved sale records. Continue?'))return;
   const subject=encodeURIComponent('amiTEA sales records');
   const message=encodeURIComponent(`amiTEA sales records\n\n${body}`);
   window.location.href=`mailto:support@amiteatea.com?subject=${subject}&body=${message}`;
+  localStorage.removeItem(SALES_KEY);
+  renderBookkeeping();
 };
 document.getElementById('recordSale').onclick=()=>{
   if(!cart.length)return;
+  const breakdown=orderBreakdown();
   saveSale();
-  const total=cartTotal();
   cart.length=0;
   sessionStorage.removeItem(CART_KEY);
   sessionStorage.removeItem(ORDER_KEY);
   renderReview();
-  document.getElementById('receiptArea').innerHTML=`<div class="receipt"><h4>Sale recorded</h4><div class="receipt-row"><span>Subtotal</span><span>${money(total)}</span></div><div class="receipt-row"><span>WI tax</span><span>${money(total*(WI_TAX_MULTIPLIER-1))}</span></div><div class="receipt-row"><span>Total to charge in Jim.com</span><strong>${money(total*WI_TAX_MULTIPLIER)}</strong></div><p class="thanks">This sale is saved in Bookkeeping.</p></div>`;
+  document.getElementById('receiptArea').innerHTML=`<div class="receipt"><h4>Sale recorded</h4><div class="receipt-row"><span>Base Price</span><span>${money(breakdown.basePrice)}</span></div><div class="receipt-row"><span>Dane County sales tax</span><span>${money(breakdown.salesTax)}</span></div><div class="receipt-row"><span>Total customer pays in Jim.com</span><strong>${money(breakdown.customerTotal)}</strong></div><div class="receipt-row"><span>Jim.com fee</span><span>${money(breakdown.jimFee)}</span></div><div class="receipt-row"><span>Sales tax sent to WI</span><span>${money(breakdown.salesTax)}</span></div><div class="receipt-row"><span>amiTEA net cash revenue</span><span>${money(breakdown.netCashRevenue)}</span></div><div class="receipt-row"><span>Self-employment tax (est.)</span><span>${money(breakdown.selfEmploymentTax)}</span></div><div class="receipt-row"><span>Est. federal income tax</span><span>${money(breakdown.estimatedIncomeTax)}</span></div><div class="receipt-row"><strong>amiTEA Final net profit</strong><strong>${money(breakdown.finalNetProfit)}</strong></div><p class="thanks">Estimates use 1.99% + $0.30 Jim.com fees, 15.3% self-employment tax, and 22% federal income tax. This sale is saved in Bookkeeping.</p></div>`;
   resetBuilder();
   showReview();
 };
