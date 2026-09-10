@@ -1,4 +1,4 @@
-const state={size:'16oz',temp:null,basetype:null,fruit:null,tea:null,add:null,boba:null,bobaPrice:0,qty:1};
+const state={size:'16oz',temp:null,basetype:null,fruit:null,tea:null,sweetness:null,add:null,boba:null,bobaPrice:0,qty:1};
 let menuTeaOptions=null;
 let menuAddOptions=null;
 
@@ -13,16 +13,16 @@ const MENU=[
     title:'Tea',
     items:[
       ['Black Tea · no add','$5'],
-      ['Oolong Tea · no add','$5'],
-      ['Black/Oolong Tea · Whole or 2% milk latte','$5.50'],
-      ['Black or Oolong · oat milk latte','$6.00'],
-      ['Black or Oolong · lemonade','$6.00'],
-      ['Black or Oolong · sparkling water','$6.00'],
+      ['Green Tea · no add','$5'],
+      ['Black/Green Tea · Whole or 2% milk latte','$5.50'],
+      ['Black or Green · oat milk latte','$6.00'],
+      ['Black or Green · lemonade','$6.00'],
+      ['Black or Green · fizzy','$6.00'],
       ['Matcha Tea · no add','$6.00'],
       ['Matcha Tea · Whole or 2% milk latte','$6.50'],
       ['Matcha · oat milk latte','$7.00'],
       ['Matcha · lemonade','$7.00'],
-      ['Matcha · sparkling water','$7.00']
+      ['Matcha · fizzy','$7.00']
     ]
   },
   {
@@ -42,15 +42,15 @@ const MENU=[
   {
     title:'Fruit & Tea',
     items:[
-        ['Strawberry + Black/Oolong/Matcha Tea','$7.00'],
-        ['Strawberry + Black/Oolong/Matcha Tea . Whole or 2% milk latte','$7.50'],
-        ['Strawberry + Black/Oolong/Matcha Tea . oat milk latte','$8.00'],
-        ['Blueberry + Black/Oolong/Matcha Tea','$7.00'],
-        ['Blueberry + Black/Oolong/Matcha Tea . Whole or 2% milk latte','$7.50'],
-        ['Blueberry + Black/Oolong/Matcha Tea . oat milk latte','$8.00'],
-        ['Mango + Black/Oolong/Matcha Tea','$7.00'],
-        ['Mango + Black/Oolong/Matcha Tea . Whole or 2% milk latte','$7.50'],
-        ['Mango + Black/Oolong/Matcha Tea . oat milk latte','$8.00'],
+        ['Strawberry + Black/Green/Matcha Tea','$7.00'],
+        ['Strawberry + Black/Green/Matcha Tea . Whole or 2% milk latte','$7.50'],
+        ['Strawberry + Black/Green/Matcha Tea . oat milk latte','$8.00'],
+        ['Blueberry + Black/Green/Matcha Tea','$7.00'],
+        ['Blueberry + Black/Green/Matcha Tea . Whole or 2% milk latte','$7.50'],
+        ['Blueberry + Black/Green/Matcha Tea . oat milk latte','$8.00'],
+        ['Mango + Black/Green/Matcha Tea','$7.00'],
+        ['Mango + Black/Green/Matcha Tea . Whole or 2% milk latte','$7.50'],
+        ['Mango + Black/Green/Matcha Tea . oat milk latte','$8.00'],
     ]
   }
 ];
@@ -134,12 +134,13 @@ document.addEventListener('click',e=>{
     applyTemperatureRules();
   }
   if(g==='basetype'){
-    state.basetype=opt.dataset.val;state.fruit=null;state.tea=null;state.add=null;
-    document.querySelectorAll('.opt[data-group="fruit"],.opt[data-group="tea"]').forEach(o=>o.classList.remove('sel'));
+    state.basetype=opt.dataset.val;state.fruit=null;state.tea=null;state.sweetness=null;state.add=null;
+    document.querySelectorAll('.opt[data-group="fruit"],.opt[data-group="tea"],.opt[data-group="sweetness"]').forEach(o=>o.classList.remove('sel'));
     const showFruit=state.basetype==='fruit'||state.basetype==='mixed';
     const showTea=state.basetype==='tea'||state.basetype==='mixed';
     document.getElementById('fruitBlock').style.display=showFruit?'block':'none';
     document.getElementById('teaBlock').style.display=showTea?'block':'none';
+    document.getElementById('sweetBlock').style.display='none';
     applyBaseRules();
     applyTeaRules();
     applyMatchaRules();
@@ -162,9 +163,14 @@ document.addEventListener('click',e=>{
       state.fruit=null;
       document.querySelectorAll('.opt[data-group="fruit"]').forEach(o=>o.classList.remove('sel'));
     }
+    document.getElementById('sweetBlock').style.display=state.basetype==='tea'?'block':'none';
     applyBaseRules();
     applyTeaRules();
     applyMatchaRules();
+  }
+  if(g==='sweetness'||g==='unsweetness'){
+    state.sweetness=opt.dataset.val;
+    document.querySelectorAll('.opt[data-group="sweetness"],.opt[data-group="unsweetness"]').forEach(o=>o.classList.toggle('sel',o===opt));
   }
   if(g==='add'){
     state.add=opt.dataset.val;
@@ -182,7 +188,7 @@ document.addEventListener('click',e=>{
 function applyTeaRules(){
   const restrictions=menuTeaOptions
     ? ['Matcha'].filter(tea=>!menuTeaOptions.includes(tea))
-    : (state.tea==='Black'||state.tea==='Oolong' ? ['Matcha'] : []);
+    : (state.tea==='Black'||state.tea==='Green' ? ['Matcha'] : []);
   document.querySelectorAll('.opt[data-group="tea"]').forEach(o=>{
     const disabled=restrictions.includes(o.dataset.val);
     o.classList.toggle('disabled',disabled);
@@ -203,7 +209,7 @@ function applyBaseRules(){
 
 function applyMatchaRules(){
   const addOptions=[...document.querySelectorAll('.opt[data-group="add"]')];
-  const teaOnly=state.basetype==='tea' && (state.tea==='Matcha'||((state.tea==='Black'||state.tea==='Oolong')&&!menuAddOptions));
+  const teaOnly=state.basetype==='tea' && (state.tea==='Matcha'||((state.tea==='Black'||state.tea==='Green')&&!menuAddOptions));
   if(teaOnly){
     const noAdd=addOptions.find(option=>option.dataset.val==='No add');
     if(noAdd){
@@ -218,7 +224,7 @@ function applyMatchaRules(){
 
 function applyAddRules(){
   const addOptions=[...document.querySelectorAll('.opt[data-group="add"]')];
-  const teaOnly=state.basetype==='tea' && (state.tea==='Matcha'||((state.tea==='Black'||state.tea==='Oolong')&&!menuAddOptions));
+  const teaOnly=state.basetype==='tea' && (state.tea==='Matcha'||((state.tea==='Black'||state.tea==='Green')&&!menuAddOptions));
   addOptions.forEach(option=>{
     const allowed=menuAddOptions || (state.add ? [state.add] : null);
     const disabled=teaOnly
@@ -232,9 +238,9 @@ function applyAddRules(){
 
 function applyTemperatureRules(){
   const hot=document.querySelector('.opt[data-group="temp"][data-val="Hot"]');
-  const sparklingOption=document.querySelector('.opt[data-group="add"][data-val="Sparkling water"]');
+  const sparklingOption=document.querySelector('.opt[data-group="add"][data-val="Fizzy"]');
   if(!hot || !sparklingOption) return;
-  const sparkling=state.add==='Sparkling water';
+  const sparkling=state.add==='Fizzy';
   const hotSelected=state.temp==='Hot';
   hot.classList.toggle('disabled',sparkling);
   hot.disabled=sparkling;
@@ -257,6 +263,7 @@ function renderSoFar(){
   const chips=[];
   if(state.temp)  chips.push({k:'Temp',v:state.temp,step:0});
   if(state.tea)   chips.push({k:'Tea',v:state.tea,step:1});
+  if(state.sweetness) chips.push({k:'Sweetness',v:state.sweetness,step:1});
   if(state.fruit) chips.push({k:'Fruit',v:state.fruit,step:1});
   if(state.add)   chips.push({k:'Add',v:state.add,step:2});
   if(state.boba)  chips.push({k:'Boba',v:state.boba,step:3});
@@ -277,7 +284,7 @@ function renderSoFar(){
 function baseComplete(){
   if(!state.basetype) return false;
   if(state.basetype==='fruit') return !!state.fruit;
-  if(state.basetype==='tea') return !!state.tea;
+  if(state.basetype==='tea') return !!state.tea && !!state.sweetness;
   if(state.basetype==='mixed') return !!state.fruit && !!state.tea;
   return false;
 }
@@ -302,19 +309,19 @@ function applyMenuPreset(){
   if(item.includes('whole or 2% milk')) menuAddOptions=['Whole milk','2% milk'];
   else if(item.includes('oat milk')) menuAddOptions=['Oat milk'];
   else if(item.includes('lemonade')) menuAddOptions=['Lemonade'];
-  else if(item.includes('sparkling water')) menuAddOptions=['Sparkling water'];
-  if(item.includes('black/oolong/matcha')) menuTeaOptions=['Black','Oolong','Matcha'];
-  else if(item.includes('black') && item.includes('oolong')) menuTeaOptions=['Black','Oolong'];
+  else if(item.includes('fizzy')) menuAddOptions=['Fizzy'];
+  if(item.includes('black/oolong/matcha')) menuTeaOptions=['Black','Green','Matcha'];
+  else if(item.includes('black') && item.includes('oolong')) menuTeaOptions=['Black','Green'];
   else if(item.includes('matcha')) menuTeaOptions=['Matcha'];
   else if(item.includes('black')) menuTeaOptions=['Black'];
-  else if(item.includes('oolong')) menuTeaOptions=['Oolong'];
+  else if(item.includes('oolong')) menuTeaOptions=['Green'];
   const hasFruit= item.includes('fruit') || item.includes('strawberry') || item.includes('blueberry') || item.includes('mango');
   if(item.includes('fruit & tea') || item.includes(' + ')) selectPresetOption('basetype','mixed');
   else if(hasFruit) selectPresetOption('basetype','fruit');
   else selectPresetOption('basetype','tea');
 
   if(item.includes('matcha') && !item.includes('black/oolong/matcha')) selectPresetOption('tea','Matcha');
-  else if(item.includes('oolong') && !item.includes('black')) selectPresetOption('tea','Oolong');
+  else if(item.includes('oolong') && !item.includes('black')) selectPresetOption('tea','Green');
   else if(item.includes('black') && !item.includes('oolong')) selectPresetOption('tea','Black');
 
   if(item.includes('strawberry') && !item.includes('blueberry') && !item.includes('mango')) selectPresetOption('fruit','Strawberry');
@@ -323,8 +330,8 @@ function applyMenuPreset(){
 
   if(item.includes('oat milk')) selectPresetOption('add','Oat milk');
   else if(item.includes('whole milk')) selectPresetOption('add','Whole milk');
-  else if(item.includes('lemonade') && !item.includes('sparkling water')) selectPresetOption('add','Lemonade');
-  else if(item.includes('sparkling water') && !item.includes('lemonade')) selectPresetOption('add','Sparkling water');
+  else if(item.includes('lemonade') && !item.includes('fizzy')) selectPresetOption('add','Lemonade');
+  else if(item.includes('fizzy') && !item.includes('lemonade')) selectPresetOption('add','Fizzy');
 
   applyTemperatureRules();
 
@@ -345,7 +352,7 @@ function drinkUnitPrice(){
   let basePrice;
   if(state.basetype==='tea'){
     basePrice=state.tea==='Matcha'?6:5;
-    if(state.add==='Lemonade' || state.add==='Sparkling water'){
+    if(state.add==='Lemonade' || state.add==='Fizzy'){
       basePrice=state.tea==='Matcha'?7:6;
     }else if(state.add==='Whole milk' || state.add==='2% milk'){
       basePrice+=0.5;
@@ -356,12 +363,12 @@ function drinkUnitPrice(){
     basePrice=6;
     if(state.add==='Whole milk' || state.add==='2% milk') basePrice+=0.5;
     if(state.add==='Oat milk') basePrice+=1;
-    if(state.add==='Lemonade' || state.add==='Sparkling water') basePrice=7;
+    if(state.add==='Lemonade' || state.add==='Fizzy') basePrice=7;
   }else{
     basePrice=7;
     if(state.add==='Whole milk' || state.add==='2% milk') basePrice+=0.5;
     if(state.add==='Oat milk') basePrice+=1;
-    if(state.add==='Lemonade' || state.add==='Sparkling water') basePrice=8;
+    if(state.add==='Lemonade' || state.add==='Fizzy') basePrice=8;
   }
   return basePrice+state.bobaPrice;
 }
@@ -376,6 +383,7 @@ function drinkName(){
 }
 function drinkDesc(){
   const bits=[state.size,state.temp];
+  if(state.sweetness) bits.push(state.sweetness);
   if(state.add && state.add!=='No add') bits.push(state.add);
   bits.push(state.boba==='Boba'?'boba':'no boba');
   return bits.join(' · ');
@@ -387,12 +395,13 @@ function commitDrink(){
   sessionStorage.setItem(CART_KEY,JSON.stringify(cart));
 }
 function resetBuilder(){
-  Object.assign(state,{size:'16oz',temp:null,basetype:null,fruit:null,tea:null,add:null,boba:null,bobaPrice:0,qty:1});
+  Object.assign(state,{size:'16oz',temp:null,basetype:null,fruit:null,tea:null,sweetness:null,add:null,boba:null,bobaPrice:0,qty:1});
   menuTeaOptions=null;
   menuAddOptions=null;
   document.querySelectorAll('.opt.sel').forEach(o=>o.classList.remove('sel'));
   document.getElementById('fruitBlock').style.display='none';
   document.getElementById('teaBlock').style.display='none';
+  document.getElementById('sweetBlock').style.display='none';
   document.getElementById('qtyNum').textContent='1';
   panels.forEach(p=>{const b=p.querySelector('[data-next]');if(b)b.disabled=true;});
   document.getElementById('addMore').disabled=false;
