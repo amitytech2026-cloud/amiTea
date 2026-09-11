@@ -83,6 +83,11 @@ class AmiPOS {
   }
 
   static createOrder({ items, paymentMethod = "Square", paymentDetails = {}, tip = 0, source = "Customer Kiosk", customerName = "" }) {
+    // Verification: Ensure payment is authorized and valid before saving order or broadcasting to kitchen
+    if (!paymentDetails || paymentDetails.success === false) {
+      throw new Error("Payment was not completed. Order cannot be sent to kitchen.");
+    }
+
     const settings = StoreSettings.getSettings();
     const totals = this.calculateTotals(items, tip);
     const orderNumber = this.generateOrderNumber();
@@ -108,7 +113,7 @@ class AmiPOS {
       tip: totals.tip,
       total: totals.total,
       payment: {
-        method: paymentMethod, // "Square", "Cash", "Jim"
+        method: paymentMethod, // "Square", "Cash"
         status: "COMPLETED",
         transactionId: paymentDetails.transactionId || ("sq_tx_" + Math.random().toString(36).substr(2, 9)),
         last4: paymentDetails.last4 || "4242",
@@ -126,7 +131,7 @@ class AmiPOS {
     // Clear active cart if this was placed from cart
     this.clearCart();
 
-    // Broadcast across windows / tabs
+    // Broadcast across windows / tabs only after successful payment
     window.dispatchEvent(new CustomEvent("amitea:order-created", { detail: newOrder }));
     return newOrder;
   }

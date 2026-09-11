@@ -43,7 +43,10 @@ function updateLocationHeader() {
 }
 
 function renderBoard() {
-  const orders = AmiPOS.getOrders();
+  const allOrders = AmiPOS.getOrders();
+  
+  // Guard: Only show orders with confirmed successful payments on the Kitchen Board
+  const orders = allOrders.filter(o => o.payment && o.payment.status === "COMPLETED");
   
   const newOrders = orders.filter(o => o.kitchenStatus === "new");
   const prepOrders = orders.filter(o => o.kitchenStatus === "preparing");
