@@ -3,12 +3,35 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>amiTEA — Staff Cashier POS &amp; Register</title>
+<title>amiTEA — Staff Cashier POS &amp; Bookkeeping</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;0,9..144,900;1,9..144,500&family=Nunito+Sans:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 <style>
+  .test-banner {
+    background: #fff3cd;
+    color: #856404;
+    border-bottom: 1.5px solid #ffeeba;
+    padding: 8px 18px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .test-badge {
+    background: #e0a800;
+    color: #fff;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 700;
+  }
   .pos-container {
     display: grid;
     grid-template-columns: 1fr 380px;
@@ -49,6 +72,35 @@
     cursor: pointer;
   }
   .loc-pill:hover { background: #ddebd9; }
+  
+  /* Navigation Tabs */
+  .pos-tabs-bar {
+    max-width: 1200px;
+    margin: 14px auto 0;
+    padding: 0 18px;
+    display: flex;
+    gap: 10px;
+  }
+  .tab-btn {
+    font-family: "Fraunces", serif;
+    font-size: 0.95rem;
+    font-weight: 600;
+    padding: 10px 20px;
+    border-radius: 12px 12px 0 0;
+    border: 1.5px solid var(--line);
+    border-bottom: none;
+    background: var(--cream-2);
+    color: var(--ink);
+    cursor: pointer;
+    transition: 0.15s;
+  }
+  .tab-btn.active {
+    background: var(--white);
+    color: var(--green);
+    border-color: var(--green);
+    box-shadow: 0 -2px 8px rgba(38,91,58,0.06);
+  }
+
   .register-card {
     background: var(--white);
     border: 1.5px solid var(--line);
@@ -127,16 +179,47 @@
   .tender-square:hover { background: var(--green-deep); }
   .tender-cash { background: var(--gold); color: #fff; }
   .tender-cash:hover { background: var(--gold-deep); }
-  .sales-summary-box {
-    margin-top: 24px;
-    background: var(--cream-2);
-    border-radius: 14px;
-    padding: 16px;
-    border: 1px dashed var(--line);
+
+  /* Bookkeeping Section */
+  .bookkeeping-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 10px 18px 40px;
   }
+  .bookkeeping-card {
+    background: var(--white);
+    border: 1.5px solid var(--line);
+    border-radius: 18px;
+    padding: 24px;
+  }
+  .bk-metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 12px;
+    margin: 16px 0 24px;
+  }
+  .bk-metric-box {
+    background: var(--cream);
+    border-radius: 12px;
+    padding: 14px;
+    border: 1px solid var(--line);
+  }
+  .bk-metric-label { font-size: 0.8rem; color: var(--ink); opacity: 0.75; }
+  .bk-metric-val { font-family: "Fraunces", serif; font-size: 1.5rem; font-weight: 700; margin-top: 4px; }
 </style>
 </head>
 <body class="menu-body">
+
+<!-- Testing Mode Banner -->
+<div class="test-banner">
+  <div style="display:flex; align-items:center; gap:8px;">
+    <span class="test-badge">Testing Process</span>
+    <span>Square Sandbox &amp; POS Simulation Mode Active. All orders, card taps, and kitchen tickets are simulated.</span>
+  </div>
+  <div>
+    <button type="button" class="btn ghost" id="resetTestDataBtn" style="padding:4px 10px; font-size:0.78rem; border-color:#d39e00; background:#fff;">Reset Test Sales</button>
+  </div>
+</div>
 
 <div class="pos-header-bar">
   <div class="pos-brand">
@@ -156,7 +239,14 @@
   </div>
 </div>
 
-<div class="pos-container">
+<!-- Tabs Bar -->
+<div class="pos-tabs-bar">
+  <button type="button" class="tab-btn active" id="tabRegisterBtn">🛒 Order Register</button>
+  <button type="button" class="tab-btn" id="tabBookkeepingBtn">📊 Sales Record &amp; Bookkeeping</button>
+</div>
+
+<!-- SECTION 1: ORDER REGISTER -->
+<div class="pos-container" id="sectionRegister">
   
   <!-- Left Side: Touch Item Catalog -->
   <div class="register-card">
@@ -189,15 +279,6 @@
 
     <!-- Quick Touch Button Grid -->
     <div class="pos-item-grid" id="posItemsGrid"></div>
-
-    <!-- Shift Sales Report -->
-    <div class="sales-summary-box">
-      <div style="display:flex; justify-content:space-between; align-items:center;">
-        <h3 style="margin:0; font-family:'Fraunces', serif; color:var(--green-deep); font-size:1.1rem;">Shift Sales &amp; Tax Report</h3>
-        <button type="button" class="btn ghost" id="refreshReportBtn" style="padding:4px 10px; font-size:0.8rem;">Refresh</button>
-      </div>
-      <div id="shiftSalesStats" style="margin-top:10px; font-size:0.9rem; display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:10px;"></div>
-    </div>
   </div>
 
   <!-- Right Side: Active Cashier Cart & Tender Panel -->
@@ -250,10 +331,149 @@
 
 </div>
 
+<!-- SECTION 2: SALES RECORD & BOOKKEEPING -->
+<div class="bookkeeping-container" id="sectionBookkeeping" hidden>
+  <div class="bookkeeping-card">
+    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1.5px solid var(--line); padding-bottom:14px; flex-wrap:wrap; gap:10px;">
+      <div>
+        <span class="step-tag">Finance &amp; Auditing</span>
+        <h2 style="font-family:'Fraunces', serif; color:var(--green); margin:2px 0;">Sales Records &amp; Bookkeeping</h2>
+        <p class="sub" style="margin:0;">Detailed ledger for tax reporting, processor fees, and shift reconciliations.</p>
+      </div>
+
+      <div class="btn-row">
+        <button type="button" class="btn ghost" id="emailBkRecordsBtn">✉️ Email Records</button>
+        <button type="button" class="btn ghost" id="lockBkBtn" style="display:none;">🔒 Lock</button>
+      </div>
+    </div>
+
+    <!-- PIN Lock View -->
+    <div id="bkLockView" style="text-align:center; padding:40px 20px;">
+      <div style="font-size:2.5rem; margin-bottom:8px;">🔐</div>
+      <h3 style="font-family:'Fraunces', serif; color:var(--green-deep); margin:0 0 6px;">Staff Bookkeeping Security</h3>
+      <p class="sub" style="margin:0 0 14px;">Enter manager/staff PIN to view sales records.</p>
+      <input type="password" id="bkPinInput" class="field pin-field" maxlength="6" inputmode="numeric" placeholder="Enter PIN (226283)" style="margin:0 auto 12px; text-align:center; font-size:1.1rem; letter-spacing:3px;">
+      <p class="co-error" id="bkPinError" hidden style="margin-bottom:10px;"></p>
+      <button type="button" class="btn primary" id="unlockBkBtn">Unlock Sales Records</button>
+    </div>
+
+    <!-- Unlocked Content View -->
+    <div id="bkContentView" hidden>
+      <!-- Key Financial Metrics -->
+      <div class="bk-metrics-grid">
+        <div class="bk-metric-box">
+          <div class="bk-metric-label">Gross Sales (Subtotal)</div>
+          <div class="bk-metric-val" style="color:var(--green-deep);" id="bkGrossSales">$0.00</div>
+          <span style="font-size:0.75rem; opacity:0.7;" id="bkOrderCount">0 Total Orders</span>
+        </div>
+
+        <div class="bk-metric-box">
+          <div class="bk-metric-label">WI Sales Tax Liability</div>
+          <div class="bk-metric-val" style="color:var(--gold-deep);" id="bkTaxCollected">$0.00</div>
+          <span style="font-size:0.75rem; opacity:0.7;">State + County local tax</span>
+        </div>
+
+        <div class="bk-metric-box">
+          <div class="bk-metric-label">Total Customer Revenue</div>
+          <div class="bk-metric-val" style="color:var(--green);" id="bkTotalCollected">$0.00</div>
+          <span style="font-size:0.75rem; opacity:0.7;" id="bkTenderSplit">0 Square · 0 Cash</span>
+        </div>
+
+        <div class="bk-metric-box">
+          <div class="bk-metric-label">Estimated Net Revenue</div>
+          <div class="bk-metric-val" style="color:var(--green-deep);" id="bkNetRevenue">$0.00</div>
+          <span style="font-size:0.75rem; opacity:0.7;">After estimated tax &amp; processing</span>
+        </div>
+      </div>
+
+      <!-- Itemized Sales Records by Date -->
+      <div id="bkSalesHistoryList"></div>
+    </div>
+
+  </div>
+</div>
+
 <!-- Location & City Tax Switcher Modal -->
 <div class="modal-backdrop" id="locationModal" hidden>
   <div class="modal-card">
     <button type="button" class="modal-close" id="closeLocModal">×</button>
+    <div class="modal-header">
+      <span class="step-tag">Store Settings</span>
+      <h2>Select Store Location</h2>
+      <p class="sub">Sets municipal Wisconsin sales tax rate and receipt headers.</p>
+    </div>
+
+    <div class="grid" style="gap:12px;">
+      <button type="button" class="opt sel" data-loc="madison_wi">
+        <span class="t">Madison, WI</span>
+        <span class="d">Dane County · 5.5% Total Sales Tax (5.0% State + 0.5% County)</span>
+      </button>
+      <button type="button" class="opt" data-loc="milwaukee_wi">
+        <span class="t">Milwaukee, WI</span>
+        <span class="d">Milwaukee City &amp; County · 7.9% Total Sales Tax (5.0% + 0.9% + 2.0%)</span>
+      </button>
+    </div>
+
+    <div style="margin-top:18px; border-top:1px dashed var(--line); padding-top:14px;">
+      <div class="subhead" style="margin-top:0;">Or Custom Municipality:</div>
+      <div style="display:grid; grid-template-columns:1fr 1fr 100px; gap:8px;">
+        <input type="text" id="customCity" class="field" placeholder="City" style="margin:0;">
+        <input type="text" id="customState" class="field" value="WI" placeholder="State" style="margin:0;">
+        <input type="number" step="0.001" id="customTaxRate" class="field" placeholder="0.055" style="margin:0;">
+      </div>
+      <button type="button" class="btn ghost" id="saveCustomLocBtn" style="margin-top:8px; width:100%;">Apply Custom Tax</button>
+    </div>
+  </div>
+</div>
+
+<!-- Cash Payment & Change Calculator Modal -->
+<div class="modal-backdrop" id="cashModal" hidden>
+  <div class="modal-card">
+    <button type="button" class="modal-close" id="closeCashModal">×</button>
+    <div class="modal-header">
+      <span class="step-tag">Cash Tender</span>
+      <h2>Cash Payment</h2>
+      <div style="font-size:1.8rem; font-weight:700; color:var(--green); margin:8px 0;" id="cashDueDisplay">$0.00</div>
+    </div>
+
+    <div style="margin-bottom:14px;">
+      <label class="modal-label">Amount Tendered</label>
+      <input type="number" step="0.01" id="cashGivenInput" class="field" placeholder="0.00" style="font-size:1.3rem; text-align:center; font-weight:700;">
+      
+      <div class="btn-row" style="margin-top:10px; justify-content:center;">
+        <button type="button" class="btn ghost" id="cashExactBtn">Exact Amount</button>
+        <button type="button" class="btn ghost cash-quick-btn" data-amt="10">$10.00</button>
+        <button type="button" class="btn ghost cash-quick-btn" data-amt="20">$20.00</button>
+        <button type="button" class="btn ghost cash-quick-btn" data-amt="50">$50.00</button>
+      </div>
+    </div>
+
+    <div id="cashChangeBox" style="background:var(--cream-2); border-radius:12px; padding:14px; text-align:center; margin-bottom:16px;">
+      <div style="font-size:0.85rem; opacity:0.8;">Change Due</div>
+      <div style="font-size:2rem; font-weight:700; color:var(--gold-deep);" id="cashChangeDisplay">$0.00</div>
+    </div>
+
+    <button type="button" class="btn primary" id="confirmCashOrderBtn" style="width:100%;">Complete Cash Sale &amp; Print Ticket</button>
+  </div>
+</div>
+
+<!-- Order Completed Modal -->
+<div class="modal-backdrop" id="cashierSuccessModal" hidden>
+  <div class="modal-card" style="text-align:center;">
+    <button type="button" class="modal-close" id="closeSuccessModal">×</button>
+    <div style="font-size:3rem;">✅</div>
+    <span class="step-tag" style="color:var(--green);">Sale Recorded</span>
+    <h2 id="successOrderNum" style="font-size:2.2rem; color:var(--green-deep); margin:6px 0;">T-101</h2>
+    <p class="sub">Ticket dispatched to Barista Kitchen Screen.</p>
+    <button type="button" class="btn gold" id="nextTicketBtn" style="width:100%;">Next Customer</button>
+  </div>
+</div>
+
+<script src="pos-config.js"></script>
+<script src="pos-core.js"></script>
+<script src="cashier.js"></script>
+</body>
+</html>
     <div class="modal-header">
       <span class="step-tag">Store Settings</span>
       <h2>Select Store Location</h2>

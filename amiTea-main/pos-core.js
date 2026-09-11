@@ -275,6 +275,9 @@ class SquarePaymentModal {
     overlay.className = "sq-overlay";
     overlay.innerHTML = `
       <div class="sq-device">
+        <div style="background:#e0a800; color:#111; font-size:0.75rem; font-weight:700; border-radius:6px; padding:3px 8px; margin-bottom:10px; display:inline-block; text-transform:uppercase; letter-spacing:0.8px;">
+          🟡 Square Sandbox Test Mode
+        </div>
         <div class="sq-brand">
           <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="4" fill="none" stroke="currentColor" stroke-width="2"/><rect x="7" y="7" width="10" height="10" rx="2" fill="currentColor"/></svg>
           Square Terminal · amiTEA
@@ -284,14 +287,14 @@ class SquarePaymentModal {
           <div class="sq-amt">$${total}</div>
           <div style="font-size:0.8rem; color:#aaa;">Includes Subtotal $${amount.toFixed(2)}${tip > 0 ? ` + Tip $${tip.toFixed(2)}` : ''}</div>
           <div class="sq-reader-anim">💳</div>
-          <div class="sq-prompt">Tap, Insert, or Swipe to Pay</div>
+          <div class="sq-prompt">Tap, Insert, or Swipe to Pay (Simulated)</div>
         </div>
         <div class="sq-options">
           <button class="sq-btn" id="sqTapCard">
-            <span>💳 Tap / Chip Card (Visa ··· 8821)</span>
+            <span>💳 Tap / Chip Card (Test Visa ··· 8821)</span>
           </button>
           <button class="sq-btn apple" id="sqApplePay">
-            <span> Pay / Google Wallet</span>
+            <span> Pay / Apple Wallet (Test)</span>
           </button>
           <button class="sq-btn cancel" id="sqCancelPay">
             Cancel Transaction

@@ -110,11 +110,6 @@ function showReview(){
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
-document.getElementById('saleRecordAccess').addEventListener('click',()=>{
-  showReview();
-  openBookkeeping();
-});
-
 // let customers jump to any step they've already reached
 stepEls.forEach(s=>s.addEventListener('click',()=>{
   const target=+s.dataset.i;
@@ -550,80 +545,6 @@ function changeReviewQty(i, delta){
   renderReview();
 }
 
-/* local sales record and PIN-locked bookkeeping */
-const SALES_KEY='amitea-sales-v2';
-const BOOKKEEPING_PIN='226283';
-const bookkeepingPanel=document.getElementById('bookkeepingPanel');
-const bookkeepingLock=document.getElementById('bookkeepingLock');
-const bookkeepingContent=document.getElementById('bookkeepingContent');
-const bookkeepingPin=document.getElementById('bookkeepingPin');
-const bookkeepingError=document.getElementById('bookkeepingError');
-
-function getSales(){
-  try{return (typeof AmiPOS!=='undefined')?AmiPOS.getOrders():JSON.parse(localStorage.getItem(SALES_KEY)||'[]');}
-  catch{return []}
-}
-
-function openBookkeeping(){
-  bookkeepingPanel.hidden=false;
-  bookkeepingLock.hidden=false;
-  bookkeepingContent.hidden=true;
-  bookkeepingError.hidden=true;
-  bookkeepingPin.value='';
-  bookkeepingPanel.scrollIntoView({behavior:'smooth',block:'start'});
-  bookkeepingPin.focus();
-}
-document.getElementById('unlockBookkeeping').onclick=()=>{
-  const entered=bookkeepingPin.value.trim();
-  if(entered!==BOOKKEEPING_PIN){
-    bookkeepingError.textContent='Incorrect PIN.';
-    bookkeepingError.hidden=false;
-    bookkeepingPin.select();
-    return;
-  }
-  bookkeepingError.hidden=true;
-  bookkeepingLock.hidden=true;
-  bookkeepingContent.hidden=false;
-  renderBookkeeping();
-};
-bookkeepingPin.addEventListener('keydown',event=>{if(event.key==='Enter')document.getElementById('unlockBookkeeping').click();});
-document.getElementById('lockBookkeeping').onclick=()=>{
-  bookkeepingContent.hidden=true;
-  bookkeepingLock.hidden=false;
-  bookkeepingPin.value='';
-  bookkeepingPin.focus();
-};
-function renderBookkeeping(){
-  const sales=getSales().sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
-  const totals=sales.reduce((sum,sale)=>({
-    customerTotal:sum.customerTotal+(Number(sale.total)||0)
-  }),{customerTotal:0});
-  document.getElementById('bookkeepingSummary').innerHTML=`<strong>${sales.length}</strong> sale${sales.length===1?'':'s'} · <strong>${money(totals.customerTotal)}</strong> customer payments`;
-  const groups=sales.reduce((byDate,sale)=>{
-    const date=new Date(sale.createdAt);
-    const key=date.toLocaleDateString();
-    (byDate[key] ||= []).push(sale);
-    return byDate;
-  },{});
-  document.getElementById('salesList').innerHTML=sales.length
-    ? Object.entries(groups).map(([date,dateSales])=>`
-      <section class="sales-date">
-        <h3>${date}</h3>
-        ${dateSales.map(sale=>`
-          <article class="sale-record">
-            <div class="sale-record-head"><strong>Order ${sale.orderNumber||sale.id} · ${money(sale.total)}</strong><time>${new Date(sale.createdAt).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'})}</time></div>
-            <div class="sale-record-items">${(sale.items||[]).map(item=>`${item.qty}× ${item.name}`).join(' · ')}</div>
-            <div class="sale-record-finance">
-              <div><span>Subtotal</span><strong>${money(sale.subtotal)}</strong></div>
-              <div><span>WI Sales Tax</span><strong>${money(sale.tax)}</strong></div>
-              <div><span>Tip</span><strong>${money(sale.tip||0)}</strong></div>
-              <div class="finance-total"><span>Total Paid (${sale.payment?.method||'Square'})</span><strong>${money(sale.total)}</strong></div>
-            </div>
-          </article>`).join('')}
-      </section>`).join('')
-    : '<p class="sub">No sales recorded yet.</p>';
-}
-
 document.getElementById('recordSale').onclick=async ()=>{
   if(!cart.length)return;
   const btn=document.getElementById('recordSale');
@@ -707,4 +628,3 @@ renderMenu();
 renderReview();
 applyTemperatureRules();
 renderSoFar();
-if(new URLSearchParams(window.location.search).get('bookkeeping')==='1')openBookkeeping();
