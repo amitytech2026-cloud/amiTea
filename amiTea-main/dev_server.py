@@ -2,6 +2,7 @@ from functools import partial
 import errno
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 import os
+from urllib.parse import urlsplit
 
 
 class NoCacheHandler(SimpleHTTPRequestHandler):
@@ -10,17 +11,39 @@ class NoCacheHandler(SimpleHTTPRequestHandler):
         super().end_headers()
 
     def do_GET(self):
-        if self.path in ("", "/"):
+        path = urlsplit(self.path).path
+        routes = {
+            "": "/menu.html",
+            "/": "/menu.html",
+            "/staff": "/cashier.html",
+            "/customer": "/menu.html",
+        }
+        if path in routes:
+            destination = routes[path]
+            query = urlsplit(self.path).query
+            if query:
+                destination += f"?{query}"
             self.send_response(302)
-            self.send_header("Location", "/menu.html")
+            self.send_header("Location", destination)
             self.end_headers()
             return
         return super().do_GET()
 
     def do_HEAD(self):
-        if self.path in ("", "/"):
+        path = urlsplit(self.path).path
+        routes = {
+            "": "/menu.html",
+            "/": "/menu.html",
+            "/staff": "/cashier.html",
+            "/customer": "/menu.html",
+        }
+        if path in routes:
+            destination = routes[path]
+            query = urlsplit(self.path).query
+            if query:
+                destination += f"?{query}"
             self.send_response(302)
-            self.send_header("Location", "/menu.html")
+            self.send_header("Location", destination)
             self.end_headers()
             return
         return super().do_HEAD()

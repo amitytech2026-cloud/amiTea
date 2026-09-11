@@ -30,3 +30,11 @@ Open http://localhost:8000 in your browser.
 - **Wisconsin Tax Calculator**: Switch seamlessly between **Madison (5.5%)** and **Milwaukee (7.9%)** or enter custom municipal rates.
 - **Square Terminal Integration**: Includes interactive contactless tap/chip card simulation and terminal checkout payload.
 - **Real-Time Cross-Screen Sync**: Orders placed from customer kiosk or menu immediately appear on the Barista Kitchen Screen with audio chimes.
+
+## Deploy to Vercel
+```bash
+npx vercel --prod
+```
+## Cashier interface /cashier.html
+## Kitchen Board /kds.html
+## Customer interface /menu.html
