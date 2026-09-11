@@ -395,7 +395,20 @@ function drinkDesc(){
 function commitDrink(){
   const orderNumber=ensureOrderNumber();
   const unit=drinkUnitPrice();
-  cart.push({orderNumber,name:drinkName(),desc:drinkDesc(),qty:state.qty,unit,total:unit*state.qty});
+  cart.push({
+    orderNumber,
+    name:drinkName(),
+    desc:drinkDesc(),
+    qty:state.qty,
+    unit,
+    total:unit*state.qty,
+    temp:state.temp||'Iced',
+    base:(state.basetype==='fruit'?state.fruit:state.basetype==='tea'?state.tea:`${state.fruit} + ${state.tea}`),
+    add:state.add||'No add',
+    sweetness:state.sweetness||'Sweetened',
+    boba:state.boba||'No boba',
+    bobaPrice:state.bobaPrice||0
+  });
   sessionStorage.setItem(CART_KEY,JSON.stringify(cart));
 }
 function resetBuilder(){
@@ -446,16 +459,23 @@ function startAnotherDrink(){
 document.getElementById('orderMore2').onclick=startAnotherDrink;
 
 /* cart + review */
-function money(n){return '$'+n.toFixed(2);}
+let builderTipPercent=0.18;
+function money(n){return '$'+(Number(n)||0).toFixed(2);}
 function cartTotal(){return cart.reduce((s,d)=>s+d.total,0);}
 function calculateBreakdown(basePrice=cartTotal()){
-  const salesTax=basePrice*DANE_COUNTY_TAX_RATE;
-  const customerTotal=basePrice+salesTax;
-  const jimFee=customerTotal*JIM_PROCESSING_RATE+JIM_PROCESSING_FLAT_FEE;
-  const netCashRevenue=customerTotal-jimFee-salesTax;
-  const selfEmploymentTax=netCashRevenue*SELF_EMPLOYMENT_TAX_RATE;
-  const estimatedIncomeTax=netCashRevenue*ESTIMATED_INCOME_TAX_RATE;
-  return {basePrice,salesTax,customerTotal,jimFee,netCashRevenue,selfEmploymentTax,estimatedIncomeTax,finalNetProfit:netCashRevenue-selfEmploymentTax-estimatedIncomeTax};
+  const settings=(typeof StoreSettings!=='undefined')?StoreSettings.getSettings():{taxRate:0.055,city:'Madison',state:'WI'};
+  const taxRate=settings.taxRate||0.055;
+  const salesTax=Math.round(basePrice*taxRate*100)/100;
+  const tipAmount=Math.round(basePrice*builderTipPercent*100)/100;
+  const customerTotal=Math.round((basePrice+salesTax+tipAmount)*100)/100;
+  return {
+    basePrice,
+    taxRate,
+    salesTax,
+    tipAmount,
+    customerTotal,
+    locationLabel:`${settings.city}, ${settings.state} (${(taxRate*100).toFixed(1)}%)`
+  };
 }
 function orderBreakdown(){return calculateBreakdown();}
 function orderTax(){return orderBreakdown().salesTax;}
@@ -464,16 +484,17 @@ function formatOrderNumber(orderNumber){return `#${orderNumber}`;}
 function ensureOrderNumber(){
   let orderNumber=Number(sessionStorage.getItem(ORDER_KEY));
   if(orderNumber)return orderNumber;
-  const next=getSales().reduce((highest,sale)=>Math.max(highest,Number(sale.orderNumber)||0),0)+1;
+  const next=(typeof AmiPOS!=='undefined')?AmiPOS.generateOrderNumber():'T-101';
   sessionStorage.setItem(ORDER_KEY,String(next));
   return next;
 }
-function activeOrderNumber(){return Number(sessionStorage.getItem(ORDER_KEY))||cart[0]?.orderNumber||null;}
+function activeOrderNumber(){return sessionStorage.getItem(ORDER_KEY)||(typeof AmiPOS!=='undefined'?AmiPOS.generateOrderNumber():'T-101');}
+
 function renderReview(){
   const list=document.getElementById('reviewList');
-  if(!cart.length){list.innerHTML='<p class="sub">Nothing here yet.</p>';return;}
+  if(!cart.length){list.innerHTML='<p class="sub">Nothing in your order yet.</p>';return;}
   const breakdown=orderBreakdown();
-  list.innerHTML=`<div class="review-order"><div class="order-number">Order ${formatOrderNumber(activeOrderNumber())}</div>${cart.map((d,i)=>`
+  list.innerHTML=`<div class="review-order"><div class="order-number">Order ${activeOrderNumber()}</div>${cart.map((d,i)=>`
       <div class="cart-item" style="background:var(--cream);color:var(--ink);">
         <div>
           <div class="ci-name" style="color:var(--green-deep)">${d.qty}× ${d.name}</div>
@@ -487,16 +508,32 @@ function renderReview(){
         </div>
         <div class="ci-price" style="color:var(--green-deep)">${money(d.total)}</div>
       </div>`).join('')}
-      <div class="receipt-row" style="color:var(--green-deep);"><span>Base price</span><span>${money(breakdown.basePrice)}</span></div>
-      <div class="receipt-row" style="color:var(--green-deep);"><span>Dane County sales tax (5.5%)</span><span>${money(breakdown.salesTax)}</span></div>
-      <div class="cart-total" style="color:var(--green-deep);border-top-color:var(--line);"><span>Total customer pays</span><span>${money(breakdown.customerTotal)}</span></div>
+      <div class="receipt-row" style="color:var(--green-deep);"><span>Subtotal</span><span>${money(breakdown.basePrice)}</span></div>
+      <div class="receipt-row" style="color:var(--green-deep);"><span>WI Sales Tax (${breakdown.locationLabel})</span><span>${money(breakdown.salesTax)}</span></div>
+      
+      <div class="tip-section" style="margin:12px 0 8px;">
+        <label class="fl" style="margin-bottom:6px;">Add Barista Tip</label>
+        <div class="tip-grid">
+          <button type="button" class="tip-btn${builderTipPercent===0.15?' sel':''}" onclick="setBuilderTip(0.15)">15%</button>
+          <button type="button" class="tip-btn${builderTipPercent===0.18?' sel':''}" onclick="setBuilderTip(0.18)">18%</button>
+          <button type="button" class="tip-btn${builderTipPercent===0.20?' sel':''}" onclick="setBuilderTip(0.20)">20%</button>
+          <button type="button" class="tip-btn${builderTipPercent===0?' sel':''}" onclick="setBuilderTip(0)">None</button>
+        </div>
+      </div>
+      
+      <div class="cart-total" style="color:var(--green-deep);border-top-color:var(--line);"><span>Total Due</span><span>${money(breakdown.customerTotal)}</span></div>
     </div>`;
 }
+
+window.setBuilderTip=function(pct){
+  builderTipPercent=pct;
+  renderReview();
+};
+
 function removeItem(i){
   cart.splice(i,1);
   sessionStorage.setItem(CART_KEY,JSON.stringify(cart));
   renderReview();
-    // Clear any visible sale confirmation when the cart is emptied.
   if(!cart.length){
     sessionStorage.removeItem(CART_KEY);
     sessionStorage.removeItem(ORDER_KEY);
@@ -512,6 +549,7 @@ function changeReviewQty(i, delta){
   sessionStorage.setItem(CART_KEY,JSON.stringify(cart));
   renderReview();
 }
+
 /* local sales record and PIN-locked bookkeeping */
 const SALES_KEY='amitea-sales-v2';
 const BOOKKEEPING_PIN='226283';
@@ -522,50 +560,10 @@ const bookkeepingPin=document.getElementById('bookkeepingPin');
 const bookkeepingError=document.getElementById('bookkeepingError');
 
 function getSales(){
-  try{return JSON.parse(localStorage.getItem(SALES_KEY)||'[]');}
+  try{return (typeof AmiPOS!=='undefined')?AmiPOS.getOrders():JSON.parse(localStorage.getItem(SALES_KEY)||'[]');}
   catch{return []}
 }
-function saveSale(){
-  const sales=getSales();
-  const breakdown=orderBreakdown();
-  sales.unshift({id:Date.now(),orderNumber:activeOrderNumber(),createdAt:new Date().toISOString(),...breakdown,subtotal:breakdown.basePrice,tax:breakdown.salesTax,total:breakdown.customerTotal,items:cart.map(d=>({name:d.name,desc:d.desc,qty:d.qty,total:d.total}))});
-  localStorage.setItem(SALES_KEY,JSON.stringify(sales));
-}
-function renderBookkeeping(){
-  const sales=getSales().sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
-  const totals=sales.reduce((sum,sale)=>({
-    customerTotal:sum.customerTotal+(Number(sale.customerTotal??sale.total)||0)
-  }),{customerTotal:0});
-  document.getElementById('bookkeepingSummary').innerHTML=`<strong>${sales.length}</strong> sale${sales.length===1?'':'s'} · <strong>${money(totals.customerTotal)}</strong> customer payments`;
-  const groups=sales.reduce((byDate,sale)=>{
-    const date=new Date(sale.createdAt);
-    const key=date.toLocaleDateString();
-    (byDate[key] ||= []).push(sale);
-    return byDate;
-  },{});
-  document.getElementById('salesList').innerHTML=sales.length
-    ? Object.entries(groups).map(([date,dateSales])=>`
-      <section class="sales-date">
-        <h3>${date}</h3>
-        ${dateSales.map(sale=>`
-          <article class="sale-record">
-            <div class="sale-record-head"><strong>Order ${formatOrderNumber(sale.orderNumber)} · ${money(sale.customerTotal??sale.total)}</strong><time>${new Date(sale.createdAt).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'})}</time></div>
-            <div class="sale-record-items">${sale.items.map(item=>`${item.qty}× ${item.name}`).join(' · ')}</div>
-            <div class="sale-record-finance">
-              <div><span>Base Price</span><strong>${money(sale.basePrice??sale.subtotal)}</strong></div>
-              <div><span>Dane County sales tax</span><strong>${money(sale.salesTax??sale.tax)}</strong></div>
-              <div><span>Total customer pays</span><strong>${money(sale.customerTotal??sale.total)}</strong></div>
-              <div><span>Jim.com fee</span><strong>${money(sale.jimFee||0)}</strong></div>
-              <div><span>Sales tax sent to WI</span><strong>${money(sale.salesTax??sale.tax)}</strong></div>
-              <div><span>amiTEA net cash revenue</span><strong>${money(sale.netCashRevenue||0)}</strong></div>
-              <div><span>Self-employment tax (est.)</span><strong>${money(sale.selfEmploymentTax||0)}</strong></div>
-              <div><span>Est. federal income tax</span><strong>${money(sale.estimatedIncomeTax||0)}</strong></div>
-              <div class="finance-total"><span>amiTEA Final net profit</span><strong>${money(sale.finalNetProfit||0)}</strong></div>
-            </div>
-          </article>`).join('')}
-      </section>`).join('')
-    : '<p class="sub">No sales recorded yet.</p>';
-}
+
 function openBookkeeping(){
   bookkeepingPanel.hidden=false;
   bookkeepingLock.hidden=false;
@@ -595,54 +593,109 @@ document.getElementById('lockBookkeeping').onclick=()=>{
   bookkeepingPin.value='';
   bookkeepingPin.focus();
 };
-document.getElementById('emailBookkeeping').onclick=()=>{
+function renderBookkeeping(){
   const sales=getSales().sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
-  if(!sales.length)return;
-  const body=sales.length
-    ? sales.map(sale=>{
-        const date=new Date(sale.createdAt).toLocaleString();
-        const items=sale.items.map(item=>`  ${item.qty} x ${item.name}`).join('\n');
-        return `ORDER ${formatOrderNumber(sale.orderNumber)}
-Date: ${date}
+  const totals=sales.reduce((sum,sale)=>({
+    customerTotal:sum.customerTotal+(Number(sale.total)||0)
+  }),{customerTotal:0});
+  document.getElementById('bookkeepingSummary').innerHTML=`<strong>${sales.length}</strong> sale${sales.length===1?'':'s'} · <strong>${money(totals.customerTotal)}</strong> customer payments`;
+  const groups=sales.reduce((byDate,sale)=>{
+    const date=new Date(sale.createdAt);
+    const key=date.toLocaleDateString();
+    (byDate[key] ||= []).push(sale);
+    return byDate;
+  },{});
+  document.getElementById('salesList').innerHTML=sales.length
+    ? Object.entries(groups).map(([date,dateSales])=>`
+      <section class="sales-date">
+        <h3>${date}</h3>
+        ${dateSales.map(sale=>`
+          <article class="sale-record">
+            <div class="sale-record-head"><strong>Order ${sale.orderNumber||sale.id} · ${money(sale.total)}</strong><time>${new Date(sale.createdAt).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'})}</time></div>
+            <div class="sale-record-items">${(sale.items||[]).map(item=>`${item.qty}× ${item.name}`).join(' · ')}</div>
+            <div class="sale-record-finance">
+              <div><span>Subtotal</span><strong>${money(sale.subtotal)}</strong></div>
+              <div><span>WI Sales Tax</span><strong>${money(sale.tax)}</strong></div>
+              <div><span>Tip</span><strong>${money(sale.tip||0)}</strong></div>
+              <div class="finance-total"><span>Total Paid (${sale.payment?.method||'Square'})</span><strong>${money(sale.total)}</strong></div>
+            </div>
+          </article>`).join('')}
+      </section>`).join('')
+    : '<p class="sub">No sales recorded yet.</p>';
+}
 
-Items:
-${items}
-
-Base Price: ${money(sale.basePrice??sale.subtotal)}
-Dane County sales tax: ${money(sale.salesTax??sale.tax)}
-Total customer pays: ${money(sale.customerTotal??sale.total)}
-Jim.com fee: ${money(sale.jimFee||0)}
-Sales tax sent to WI: ${money(sale.salesTax??sale.tax)}
-amiTEA net cash revenue: ${money(sale.netCashRevenue||0)}
-Self-employment tax (estimated): ${money(sale.selfEmploymentTax||0)}
-Estimated federal income tax: ${money(sale.estimatedIncomeTax||0)}
-amiTEA Final net profit: ${money(sale.finalNetProfit||0)}`;
-      }).join('\n\n------------------------------\n\n')
-    : 'No sales recorded yet.';
-  if(!window.confirm('This will open an email draft and permanently delete all saved sale records. Continue?'))return;
-  const subject=encodeURIComponent('amiTEA sales records');
-  const message=encodeURIComponent(`amiTEA sales records\n\n${body}`);
-  window.location.href=`mailto:support@amiteatea.com?subject=${subject}&body=${message}`;
-  localStorage.removeItem(SALES_KEY);
-  renderBookkeeping();
-};
-document.getElementById('recordSale').onclick=()=>{
+document.getElementById('recordSale').onclick=async ()=>{
   if(!cart.length)return;
-  const breakdown=orderBreakdown();
-  saveSale();
+  const btn=document.getElementById('recordSale');
+  btn.disabled=true;
+  btn.textContent='Connecting to Square Terminal...';
+
+  try {
+    const breakdown=orderBreakdown();
+    const chargeAmount=breakdown.basePrice+breakdown.salesTax;
+
+    const paymentResult=await SquarePaymentService.processSquareCheckout({
+      amount:chargeAmount,
+      tip:breakdown.tipAmount,
+      orderSummary:`${cart.length} drinks`
+    });
+
+    const order=AmiPOS.createOrder({
+      items:cart.map(d=>({
+        name:d.name,
+        base:d.base||d.name,
+        temp:d.temp||'Iced',
+        add:d.add||'No add',
+        sweetness:d.sweetness||'Sweetened',
+        boba:d.boba||'No boba',
+        bobaPrice:d.bobaPrice||0,
+        qty:d.qty||1,
+        unitPrice:d.unit,
+        totalItemPrice:d.total
+      })),
+      paymentMethod:"Square Terminal",
+      paymentDetails:paymentResult,
+      tip:breakdown.tipAmount,
+      source:"Customer Step Builder",
+      customerName:"Customer Kiosk"
+    });
+
+    cart.length=0;
+    sessionStorage.removeItem(CART_KEY);
+    sessionStorage.removeItem(ORDER_KEY);
+    renderReview();
+
+    document.getElementById('receiptArea').innerHTML=`
+      <div class="receipt" style="text-align:left;">
+        <div style="text-align:center; margin-bottom:12px;">
+          <div style="font-size:2.4rem;">🧋✨</div>
+          <h3 style="font-family:'Fraunces', serif; color:var(--green); margin:4px 0;">Order Sent to Kitchen!</h3>
+          <div style="font-size:1.9rem; font-weight:700; color:var(--gold-deep); font-family:'Fraunces', serif;">${order.orderNumber}</div>
+          <p style="font-size:0.85rem; color:var(--green-deep); margin:2px 0 10px;">Payment Approved via Square (${paymentResult.cardBrand} ··· ${paymentResult.last4})</p>
+        </div>
+        <div class="receipt-row"><span>Store Location</span><span>${order.location.city}, ${order.location.state}</span></div>
+        <div class="receipt-row"><span>Base Price</span><span>${money(order.subtotal)}</span></div>
+        <div class="receipt-row"><span>WI Sales Tax (${(order.taxRate*100).toFixed(1)}%)</span><span>${money(order.tax)}</span></div>
+        ${order.tip > 0 ? `<div class="receipt-row"><span>Barista Tip</span><span>${money(order.tip)}</span></div>` : ''}
+        <div class="receipt-row" style="font-weight:700; font-size:1.1rem; color:var(--green-deep); border-top:1px solid var(--line); margin-top:6px; padding-top:6px;">
+          <span>Total Paid</span><span>${money(order.total)}</span>
+        </div>
+        <p class="thanks">Thank you! Your drinks are currently brewing on the Barista Kitchen Screen.</p>
+      </div>
+    `;
+    resetBuilder();
+    showReview();
+  } catch(err) {
+    console.warn("Square payment cancelled:", err);
+  } finally {
+    btn.disabled=false;
+    btn.textContent='💳 Pay with Square';
+  }
+};
+document.getElementById('endOrder').onclick=()=>{
   cart.length=0;
   sessionStorage.removeItem(CART_KEY);
   sessionStorage.removeItem(ORDER_KEY);
-  renderReview();
-  document.getElementById('receiptArea').innerHTML=`<div class="receipt"><h4>Sale recorded</h4><div class="receipt-row"><span>Base Price</span><span>${money(breakdown.basePrice)}</span></div><div class="receipt-row"><span>Dane County sales tax</span><span>${money(breakdown.salesTax)}</span></div><div class="receipt-row"><span>Total customer pays in Jim.com</span><strong>${money(breakdown.customerTotal)}</strong></div><div class="receipt-row"><span>Jim.com fee</span><span>${money(breakdown.jimFee)}</span></div><div class="receipt-row"><span>Sales tax sent to WI</span><span>${money(breakdown.salesTax)}</span></div><div class="receipt-row"><span>amiTEA net cash revenue</span><span>${money(breakdown.netCashRevenue)}</span></div><div class="receipt-row"><span>Self-employment tax (est.)</span><span>${money(breakdown.selfEmploymentTax)}</span></div><div class="receipt-row"><span>Est. federal income tax</span><span>${money(breakdown.estimatedIncomeTax)}</span></div><div class="receipt-row"><strong>amiTEA Final net profit</strong><strong>${money(breakdown.finalNetProfit)}</strong></div><p class="thanks">Estimates use 1.99% + $0.30 Jim.com fees, 15.3% self-employment tax, and 22% federal income tax. This sale is saved in Bookkeeping.</p></div>`;
-  resetBuilder();
-  showReview();
-};
-document.getElementById('endOrder').onclick=()=>{
-  if(cart.length){
-    document.getElementById('receiptArea').innerHTML='<p class="co-error">Record the sale before ending this order.</p>';
-    return;
-  }
   document.getElementById('receiptArea').innerHTML='';
   resetBuilder();
   document.getElementById('addOrder').disabled=false;

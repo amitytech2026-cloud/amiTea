@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>amiTEA — Staff Cashier POS &amp; Register</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;0,9..144,900;1,9..144,500&family=Nunito+Sans:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+  .pos-container {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 10px 18px 40px;
+  }
+  @media (max-width: 900px) {
+    .pos-container { grid-template-columns: 1fr; }
+  }
+  .pos-header-bar {
+    background: var(--white);
+    border-bottom: 1.5px solid var(--line);
+    padding: 12px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .pos-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .pos-brand img { width: 44px; height: 44px; }
+  .pos-brand h1 { font-family: "Fraunces", serif; font-size: 1.4rem; color: var(--green); margin: 0; }
+  .pos-quick-nav { display: flex; gap: 8px; flex-wrap: wrap; }
+  .loc-pill {
+    background: #eef4ec;
+    border: 1px solid var(--green);
+    color: var(--green-deep);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .loc-pill:hover { background: #ddebd9; }
+  .register-card {
+    background: var(--white);
+    border: 1.5px solid var(--line);
+    border-radius: 18px;
+    padding: 20px;
+  }
+  .pos-item-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 12px;
+    margin-top: 14px;
+  }
+  .pos-tap-btn {
+    background: var(--cream);
+    border: 1.5px solid var(--line);
+    border-radius: 14px;
+    padding: 14px 10px;
+    text-align: center;
+    cursor: pointer;
+    transition: 0.15s;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 85px;
+  }
+  .pos-tap-btn:hover { border-color: var(--gold); background: #faf4e6; transform: translateY(-2px); }
+  .pos-tap-btn .p-name { font-family: "Fraunces", serif; font-weight: 600; font-size: 0.95rem; color: var(--green-deep); }
+  .pos-tap-btn .p-price { font-size: 0.88rem; color: var(--gold-deep); font-weight: 700; margin-top: 6px; }
+  
+  .pos-cart-panel {
+    background: var(--white);
+    border: 1.5px solid var(--line);
+    border-radius: 18px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    height: fit-content;
+  }
+  .pos-cart-items {
+    max-height: 340px;
+    overflow-y: auto;
+    margin: 14px 0;
+    display: grid;
+    gap: 8px;
+  }
+  .pos-cart-row {
+    background: var(--cream);
+    border-radius: 10px;
+    padding: 10px 12px;
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: 0.88rem;
+  }
+  .pos-tender-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 14px;
+  }
+  .tender-btn {
+    padding: 14px 8px;
+    font-family: "Fraunces", serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    border-radius: 12px;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    transition: 0.15s;
+  }
+  .tender-square { background: var(--green); color: #fff; }
+  .tender-square:hover { background: var(--green-deep); }
+  .tender-cash { background: var(--gold); color: #fff; }
+  .tender-cash:hover { background: var(--gold-deep); }
+  .sales-summary-box {
+    margin-top: 24px;
+    background: var(--cream-2);
+    border-radius: 14px;
+    padding: 16px;
+    border: 1px dashed var(--line);
+  }
+</style>
+</head>
+<body class="menu-body">
+
+<div class="pos-header-bar">
+  <div class="pos-brand">
+    <img src="amitea-clinking-cups.png" alt="amiTEA logo">
+    <div>
+      <h1>amiTEA Cashier Register</h1>
+      <span style="font-size:0.82rem; opacity:0.75;">Staff POS &amp; Order Terminal</span>
+    </div>
+  </div>
+
+  <div class="pos-quick-nav">
+    <button type="button" class="loc-pill" id="changeLocationBtn">
+      📍 Location: <span id="currentLocDisplay">Madison, WI (5.5%)</span>
+    </button>
+    <a href="cashier.html" class="btn ghost active" style="padding:6px 14px; font-size:0.85rem; background:var(--green); color:var(--white);">Staff Register</a>
+    <a href="kds.html" class="btn ghost" style="padding:6px 14px; font-size:0.85rem;">Kitchen Board</a>
+  </div>
+</div>
+
+<div class="pos-container">
+  
+  <!-- Left Side: Touch Item Catalog -->
+  <div class="register-card">
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+      <h2 style="font-family:'Fraunces', serif; color:var(--green); margin:0; font-size:1.4rem;">Quick Order Grid</h2>
+      <div class="category-pills" style="margin:0;">
+        <button type="button" class="cat-pill active" data-pos-cat="all">All Items</button>
+        <button type="button" class="cat-pill" data-pos-cat="Tea">Tea</button>
+        <button type="button" class="cat-pill" data-pos-cat="Fruit">Fruit</button>
+        <button type="button" class="cat-pill" data-pos-cat="Latte">Lattes</button>
+      </div>
+    </div>
+
+    <!-- Quick Modifier Bar -->
+    <div style="margin-top:14px; display:flex; gap:8px; flex-wrap:wrap; background:var(--cream-2); padding:10px 12px; border-radius:12px;">
+      <span style="font-size:0.8rem; font-weight:700; align-self:center; color:var(--gold-deep);">DEFAULT MODIFIERS:</span>
+      <select id="posDefaultTemp" class="field" style="width:auto; padding:6px 10px; margin:0; font-size:0.85rem;">
+        <option value="Iced">Iced 🧊</option>
+        <option value="Hot">Hot 🔥</option>
+      </select>
+      <select id="posDefaultSweetness" class="field" style="width:auto; padding:6px 10px; margin:0; font-size:0.85rem;">
+        <option value="Sweetened">Sweetened (100%)</option>
+        <option value="Honey">Honey 🍯</option>
+        <option value="Unsweetened">Unsweetened (0%)</option>
+      </select>
+      <label style="display:flex; align-items:center; gap:6px; font-size:0.85rem; font-weight:600; margin-left:auto; cursor:pointer;">
+        <input type="checkbox" id="posAddBobaCheckbox"> + Add Boba ($0.75)
+      </label>
+    </div>
+
+    <!-- Quick Touch Button Grid -->
+    <div class="pos-item-grid" id="posItemsGrid"></div>
+
+    <!-- Shift Sales Report -->
+    <div class="sales-summary-box">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h3 style="margin:0; font-family:'Fraunces', serif; color:var(--green-deep); font-size:1.1rem;">Shift Sales &amp; Tax Report</h3>
+        <button type="button" class="btn ghost" id="refreshReportBtn" style="padding:4px 10px; font-size:0.8rem;">Refresh</button>
+      </div>
+      <div id="shiftSalesStats" style="margin-top:10px; font-size:0.9rem; display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:10px;"></div>
+    </div>
+  </div>
+
+  <!-- Right Side: Active Cashier Cart & Tender Panel -->
+  <div class="pos-cart-panel">
+    <div style="display:flex; justify-content:space-between; align-items:baseline; border-bottom:1px solid var(--line); padding-bottom:10px;">
+      <h3 style="margin:0; font-family:'Fraunces', serif; color:var(--green-deep);">Active Register Ticket</h3>
+      <span id="posActiveOrderNum" style="font-weight:700; color:var(--gold-deep); font-family:'Fraunces', serif;">T-101</span>
+    </div>
+
+    <div class="pos-cart-items" id="posCartList">
+      <div style="text-align:center; padding:30px 10px; opacity:0.6; font-size:0.9rem;">
+        No items in ticket. Tap drinks on the left to add.
+      </div>
+    </div>
+
+    <!-- Customer Name / Table tag -->
+    <input type="text" id="posCustomerTag" class="field" placeholder="Customer Name / Table # (Optional)" style="margin-bottom:10px; font-size:0.9rem; padding:8px 12px;">
+
+    <!-- Total Calculations -->
+    <div style="border-top:1.5px solid var(--line); padding-top:12px; display:grid; gap:6px; font-size:0.92rem;">
+      <div style="display:flex; justify-content:space-between;">
+        <span>Subtotal</span>
+        <span id="posSubtotal">$0.00</span>
+      </div>
+      <div style="display:flex; justify-content:space-between;">
+        <span id="posTaxLabel">WI Tax</span>
+        <span id="posTax">$0.00</span>
+      </div>
+      <div style="display:flex; justify-content:space-between; font-size:1.25rem; font-weight:700; font-family:'Fraunces', serif; color:var(--green); border-top:1px solid var(--line); padding-top:8px; margin-top:4px;">
+        <span>Total Due</span>
+        <span id="posTotalDue">$0.00</span>
+      </div>
+    </div>
+
+    <!-- Payment Tender Actions -->
+    <div class="pos-tender-grid">
+      <button type="button" class="tender-btn tender-square" id="tenderSquareBtn">
+        <span>💳 Square Terminal</span>
+        <small style="font-size:0.75rem; font-weight:normal; opacity:0.9;">Tap/Chip/Apple Pay</small>
+      </button>
+
+      <button type="button" class="tender-btn tender-cash" id="tenderCashBtn">
+        <span>💵 Cash Tender</span>
+        <small style="font-size:0.75rem; font-weight:normal; opacity:0.9;">Exact / Change Calc</small>
+      </button>
+    </div>
+
+    <button type="button" class="btn ghost" id="posClearTicketBtn" style="margin-top:10px; width:100%; padding:8px; font-size:0.85rem;">Clear Ticket</button>
+  </div>
+
+</div>
+
+<!-- Location & City Tax Switcher Modal -->
+<div class="modal-backdrop" id="locationModal" hidden>
+  <div class="modal-card">
+    <button type="button" class="modal-close" id="closeLocModal">×</button>
+    <div class="modal-header">
+      <span class="step-tag">Store Settings</span>
+      <h2>Select Store Location</h2>
+      <p class="sub">Sets municipal Wisconsin sales tax rate and receipt headers.</p>
+    </div>
+
+    <div class="grid" style="gap:12px;">
+      <button type="button" class="opt sel" data-loc="madison_wi">
+        <span class="t">Madison, WI</span>
+        <span class="d">Dane County · 5.5% Total Sales Tax (5.0% State + 0.5% County)</span>
+      </button>
+      <button type="button" class="opt" data-loc="milwaukee_wi">
+        <span class="t">Milwaukee, WI</span>
+        <span class="d">Milwaukee City &amp; County · 7.9% Total Sales Tax (5.0% + 0.9% + 2.0%)</span>
+      </button>
+    </div>
+
+    <div style="margin-top:18px; border-top:1px dashed var(--line); padding-top:14px;">
+      <div class="subhead" style="margin-top:0;">Or Custom Municipality:</div>
+      <div style="display:grid; grid-template-columns:1fr 1fr 100px; gap:8px;">
+        <input type="text" id="customCity" class="field" placeholder="City" style="margin:0;">
+        <input type="text" id="customState" class="field" value="WI" placeholder="State" style="margin:0;">
+        <input type="number" step="0.001" id="customTaxRate" class="field" placeholder="0.055" style="margin:0;">
+      </div>
+      <button type="button" class="btn ghost" id="saveCustomLocBtn" style="margin-top:8px; width:100%;">Apply Custom Tax</button>
+    </div>
+  </div>
+</div>
+
+<!-- Cash Payment & Change Calculator Modal -->
+<div class="modal-backdrop" id="cashModal" hidden>
+  <div class="modal-card">
+    <button type="button" class="modal-close" id="closeCashModal">×</button>
+    <div class="modal-header">
+      <span class="step-tag">Cash Tender</span>
+      <h2>Cash Payment</h2>
+      <div style="font-size:1.8rem; font-weight:700; color:var(--green); margin:8px 0;" id="cashDueDisplay">$0.00</div>
+    </div>
+
+    <div style="margin-bottom:14px;">
+      <label class="modal-label">Amount Tendered</label>
+      <input type="number" step="0.01" id="cashGivenInput" class="field" placeholder="0.00" style="font-size:1.3rem; text-align:center; font-weight:700;">
+      
+      <div class="btn-row" style="margin-top:10px; justify-content:center;">
+        <button type="button" class="btn ghost" id="cashExactBtn">Exact Amount</button>
+        <button type="button" class="btn ghost" class="cash-quick-btn" data-amt="10">$10.00</button>
+        <button type="button" class="btn ghost" class="cash-quick-btn" data-amt="20">$20.00</button>
+        <button type="button" class="btn ghost" class="cash-quick-btn" data-amt="50">$50.00</button>
+      </div>
+    </div>
+
+    <div id="cashChangeBox" style="background:var(--cream-2); border-radius:12px; padding:14px; text-align:center; margin-bottom:16px;">
+      <div style="font-size:0.85rem; opacity:0.8;">Change Due</div>
+      <div style="font-size:2rem; font-weight:700; color:var(--gold-deep);" id="cashChangeDisplay">$0.00</div>
+    </div>
+
+    <button type="button" class="btn primary" id="confirmCashOrderBtn" style="width:100%;">Complete Cash Sale &amp; Print Ticket</button>
+  </div>
+</div>
+
+<!-- Order Completed Modal -->
+<div class="modal-backdrop" id="cashierSuccessModal" hidden>
+  <div class="modal-card" style="text-align:center;">
+    <button type="button" class="modal-close" id="closeSuccessModal">×</button>
+    <div style="font-size:3rem;">✅</div>
+    <span class="step-tag" style="color:var(--green);">Sale Recorded</span>
+    <h2 id="successOrderNum" style="font-size:2.2rem; color:var(--green-deep); margin:6px 0;">T-101</h2>
+    <p class="sub">Ticket dispatched to Barista Kitchen Screen.</p>
+    <button type="button" class="btn gold" id="nextTicketBtn" style="width:100%;">Next Customer</button>
+  </div>
+</div>
+
+<script src="pos-config.js"></script>
+<script src="pos-core.js"></script>
+<script src="cashier.js"></script>
+</body>
+</html>

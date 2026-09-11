@@ -359,3 +359,322 @@ footer { text-align: center; padding: 20px; font-size: .85rem; color: var(--gree
   .menu-page .fruit-menu-columns { grid-template-columns: 1fr; gap: 16px; }
   .menu-page .fruit-menu-spacer { min-height: 150px; padding: 20px 10px; }
 }
+
+/* ==========================================================
+   CUSTOMER MENU & POS EXTENSIONS (Search, Cart, Modals)
+   ========================================================== */
+
+.menu-search-bar-wrap {
+  margin-bottom: 20px;
+}
+
+.search-input-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-icon {
+  position: absolute;
+  left: 16px;
+  font-size: 1.1rem;
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.search-input {
+  width: 100%;
+  padding: 14px 44px 14px 44px;
+  border-radius: 14px;
+  border: 1.6px solid var(--line);
+  background: var(--white);
+  font: inherit;
+  font-size: 1rem;
+  color: var(--ink);
+  transition: 0.2s;
+  box-shadow: 0 4px 14px rgba(38, 91, 58, 0.04);
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--green);
+  box-shadow: 0 0 0 3px rgba(38, 91, 58, 0.12);
+}
+
+.clear-search-btn {
+  position: absolute;
+  right: 14px;
+  background: none;
+  border: none;
+  font-size: 1.4rem;
+  color: var(--ink);
+  opacity: 0.5;
+  cursor: pointer;
+  padding: 4px 8px;
+}
+
+.clear-search-btn:hover {
+  opacity: 1;
+  color: #c0392b;
+}
+
+.category-pills {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+
+.cat-pill {
+  font-family: "Fraunces", serif;
+  font-size: 0.88rem;
+  font-weight: 600;
+  padding: 7px 16px;
+  border-radius: 20px;
+  border: 1.4px solid var(--line);
+  background: var(--white);
+  color: var(--ink);
+  cursor: pointer;
+  transition: 0.15s;
+}
+
+.cat-pill:hover {
+  border-color: var(--gold);
+  background: #fcf8ee;
+}
+
+.cat-pill.active {
+  background: var(--green);
+  color: var(--white);
+  border-color: var(--green);
+}
+
+.loc-tax-banner {
+  margin-top: 8px;
+  padding: 6px 12px;
+  background: #eef4ec;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  color: var(--green-deep);
+  display: inline-block;
+}
+
+.search-summary {
+  background: var(--cream-2);
+  border-left: 3px solid var(--gold);
+  padding: 8px 12px;
+  margin-bottom: 14px;
+  font-size: 0.88rem;
+  border-radius: 4px;
+}
+
+/* Floating Customer Cart Bar */
+.customer-cart-bar {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(600px, 92vw);
+  background: var(--green-deep);
+  color: #fff;
+  border-radius: 20px;
+  padding: 12px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+  z-index: 1000;
+  animation: floatUp 0.3s ease;
+}
+
+@keyframes floatUp {
+  from { transform: translate(-50%, 40px); opacity: 0; }
+  to { transform: translate(-50%, 0); opacity: 1; }
+}
+
+.cart-bar-info {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.cart-badge {
+  background: var(--gold);
+  color: #fff;
+  font-weight: 700;
+  font-family: "Fraunces", serif;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 0.95rem;
+}
+
+.cart-bar-title {
+  font-family: "Fraunces", serif;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.cart-bar-sub {
+  font-size: 0.82rem;
+  opacity: 0.85;
+}
+
+/* Modals */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 16px;
+  animation: fadeIn 0.2s ease;
+}
+
+.modal-backdrop[hidden] {
+  display: none;
+}
+
+.modal-card {
+  background: var(--white);
+  border-radius: 24px;
+  max-width: 520px;
+  width: 100%;
+  padding: 26px;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+  border: 1.5px solid var(--line);
+}
+
+.cart-modal-card {
+  max-width: 580px;
+}
+
+.modal-close {
+  position: absolute;
+  top: 16px;
+  right: 18px;
+  background: none;
+  border: none;
+  font-size: 1.8rem;
+  color: var(--ink);
+  opacity: 0.6;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.modal-close:hover { opacity: 1; }
+
+.modal-header h2 {
+  font-family: "Fraunces", serif;
+  color: var(--green);
+  margin: 4px 0 6px;
+  font-size: 1.5rem;
+}
+
+.modal-price {
+  font-family: "Fraunces", serif;
+  font-weight: 700;
+  color: var(--gold-deep);
+  font-size: 1.2rem;
+}
+
+.modal-field-group {
+  margin-top: 18px;
+}
+
+.modal-label {
+  display: block;
+  font-family: "Fraunces", serif;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--green-deep);
+  margin-bottom: 8px;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.modal-actions .btn {
+  flex: 1;
+  text-align: center;
+}
+
+/* Cart summary inside checkout drawer */
+.cart-items-container {
+  max-height: 240px;
+  overflow-y: auto;
+  margin: 16px 0;
+  display: grid;
+  gap: 10px;
+}
+
+.cart-summary-card {
+  background: var(--cream);
+  border-radius: 14px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  margin-top: 12px;
+}
+
+.cart-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 6px;
+  font-size: 0.92rem;
+}
+
+.cart-row.total-row {
+  border-top: 1.5px solid var(--line);
+  padding-top: 10px;
+  margin-top: 10px;
+  font-family: "Fraunces", serif;
+  font-weight: 700;
+  font-size: 1.3rem;
+  color: var(--green-deep);
+}
+
+.tip-section {
+  margin: 10px 0;
+  padding: 10px 0;
+  border-top: 1px dashed var(--line);
+  border-bottom: 1px dashed var(--line);
+}
+
+.tip-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.tip-btn {
+  background: var(--white);
+  border: 1.5px solid var(--line);
+  border-radius: 10px;
+  padding: 8px 4px;
+  font-family: "Fraunces", serif;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: 0.15s;
+}
+
+.tip-btn:hover {
+  border-color: var(--gold);
+}
+
+.tip-btn.sel {
+  background: var(--green);
+  color: var(--white);
+  border-color: var(--green);
+}

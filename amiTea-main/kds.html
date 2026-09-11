@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>amiTEA — Barista Kitchen Display System (KDS)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;0,9..144,900;1,9..144,500&family=Nunito+Sans:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+  body {
+    background: #18201a;
+    color: #f6f1e4;
+    min-height: 100vh;
+  }
+  .kds-header {
+    background: #111713;
+    border-bottom: 2px solid #265b3a;
+    padding: 14px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .kds-brand {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .kds-brand img { width: 44px; height: 44px; border-radius: 8px; filter: brightness(0.9); }
+  .kds-brand h1 { font-family: "Fraunces", serif; font-size: 1.4rem; color: #d59a2c; margin: 0; }
+  .kds-stats {
+    display: flex;
+    gap: 16px;
+    font-size: 0.9rem;
+  }
+  .kds-stat-pill {
+    background: #233026;
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1px solid #36533d;
+  }
+  .kds-board {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+    padding: 20px;
+    max-width: 1500px;
+    margin: 0 auto;
+  }
+  @media (max-width: 1000px) {
+    .kds-board { grid-template-columns: 1fr; }
+  }
+  .kds-column {
+    background: #1d2720;
+    border-radius: 16px;
+    padding: 16px;
+    border: 1px solid #2e4133;
+    display: flex;
+    flex-direction: column;
+    min-height: 600px;
+  }
+  .kds-col-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #36533d;
+    margin-bottom: 14px;
+    font-family: "Fraunces", serif;
+  }
+  .kds-col-header h2 { font-size: 1.2rem; margin: 0; }
+  .kds-col-count {
+    background: #d59a2c;
+    color: #111;
+    font-weight: 700;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+  }
+  .kds-cards-container {
+    display: grid;
+    gap: 14px;
+    overflow-y: auto;
+  }
+  .kds-ticket {
+    background: #26352b;
+    border-radius: 14px;
+    padding: 16px;
+    border: 1px solid #3e5645;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.3);
+    animation: ticketSlide 0.25s ease;
+  }
+  @keyframes ticketSlide {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: none; }
+  }
+  .kds-ticket.urgent {
+    border-color: #e67e22;
+    background: #33271f;
+  }
+  .kds-ticket-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    border-bottom: 1px dashed #4e6b56;
+    padding-bottom: 8px;
+    margin-bottom: 10px;
+  }
+  .kds-ord-num {
+    font-family: "Fraunces", serif;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #d59a2c;
+  }
+  .kds-time {
+    font-size: 0.8rem;
+    color: #aaa;
+  }
+  .kds-item-row {
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .kds-item-name {
+    font-family: "Fraunces", serif;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: #fff;
+  }
+  .kds-tags {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 6px;
+  }
+  .kds-tag {
+    background: #19231c;
+    color: #d8caa8;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    border: 1px solid #36533d;
+  }
+  .kds-tag.boba {
+    background: #462c12;
+    color: #f39c12;
+    border-color: #d59a2c;
+    font-weight: 700;
+  }
+  .kds-tag.hot {
+    background: #441a1a;
+    color: #ff7675;
+    border-color: #d63031;
+  }
+  .kds-tag.iced {
+    background: #172d3d;
+    color: #74b9ff;
+    border-color: #0984e3;
+  }
+  .kds-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 14px;
+  }
+  .kds-btn {
+    flex: 1;
+    padding: 10px;
+    border-radius: 10px;
+    border: none;
+    font-family: "Fraunces", serif;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: 0.15s;
+  }
+  .kds-btn-prep { background: #d59a2c; color: #111; }
+  .kds-btn-prep:hover { background: #e5a93b; }
+  .kds-btn-ready { background: #27ae60; color: #fff; }
+  .kds-btn-ready:hover { background: #2ecc71; }
+  .kds-btn-complete { background: #2c3e50; color: #ecf0f1; border: 1px solid #4a6278; }
+  .kds-btn-complete:hover { background: #34495e; }
+</style>
+</head>
+<body>
+
+<header class="kds-header">
+  <div class="kds-brand">
+    <img src="amitea-clinking-cups.png" alt="amiTEA logo">
+    <div>
+      <h1>amiTEA Barista Kitchen Board</h1>
+      <span style="font-size:0.8rem; color:#88a892;">Live Order Queue &amp; Preparation Station</span>
+    </div>
+  </div>
+
+  <div class="kds-stats">
+    <div class="kds-stat-pill">📍 Location: <strong id="kdsLocDisplay">Madison, WI</strong></div>
+    <div class="kds-stat-pill">Pending Drinks: <strong id="kdsActiveDrinksCount" style="color:#d59a2c;">0</strong></div>
+    <a href="cashier.html" class="btn ghost" style="color:#f6f1e4; border-color:#36533d; padding:6px 14px; font-size:0.85rem;">Staff Register</a>
+    <a href="kds.html" class="btn ghost" style="color:#f6f1e4; border-color:#2ecc71; background:#233026; padding:6px 14px; font-size:0.85rem;">Kitchen Board</a>
+  </div>
+</header>
+
+<main class="kds-board">
+  
+  <!-- Column 1: New Orders -->
+  <section class="kds-column" id="colNew">
+    <div class="kds-col-header">
+      <h2 style="color:#ff7675;">🔔 New Orders</h2>
+      <span class="kds-col-count" id="countNew">0</span>
+    </div>
+    <div class="kds-cards-container" id="cardsNew"></div>
+  </section>
+
+  <!-- Column 2: In Preparation -->
+  <section class="kds-column" id="colPrep">
+    <div class="kds-col-header">
+      <h2 style="color:#d59a2c;">🍵 In Preparation</h2>
+      <span class="kds-col-count" id="countPrep">0</span>
+    </div>
+    <div class="kds-cards-container" id="cardsPrep"></div>
+  </section>
+
+  <!-- Column 3: Ready for Pickup -->
+  <section class="kds-column" id="colReady">
+    <div class="kds-col-header">
+      <h2 style="color:#2ecc71;">✨ Ready for Pickup</h2>
+      <span class="kds-col-count" id="countReady">0</span>
+    </div>
+    <div class="kds-cards-container" id="cardsReady"></div>
+  </section>
+
+</main>
+
+<script src="pos-config.js"></script>
+<script src="pos-core.js"></script>
+<script src="kds.js"></script>
+</body>
+</html>

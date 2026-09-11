@@ -16,8 +16,8 @@
   <h1 class="kicker">Build Your <em>amiTEA</em></h1>
   <p class="tag">tea among friends</p>
   <nav class="page-nav" aria-label="Main navigation">
-    <a class="btn ghost active" href="index.html">Build your amiTEA</a>
-    <a class="btn ghost" href="menu.html">View menu</a>
+    <a class="btn ghost active" href="index.html">Step Builder</a>
+    <a class="btn ghost" href="menu.html">Menu &amp; Search</a>
   </nav>
 </header>
 
@@ -158,15 +158,15 @@
 
   <!-- STEP 6: REVIEW / SALES RECORD -->
   <section class="panel" data-panel="5">
-    <h2>Review &amp; record sale</h2>
-    <p class="sub">Charge the total in Jim.com, then save this sale.</p>
+    <h2>Review &amp; Pay</h2>
+    <p class="sub">Review your drink order and complete payment with Square.</p>
     <div id="reviewList"></div>
     <div class="nav">
       <div class="btn-row">
         <button type="button" class="btn ghost" id="orderMore2">+ Add &amp; order more</button>
-        <button type="button" class="btn ghost" id="endOrder">End order</button>
+        <button type="button" class="btn ghost" id="endOrder">Cancel order</button>
       </div>
-      <button class="btn gold" id="recordSale">Record sale</button>
+      <button class="btn gold" id="recordSale">💳 Pay with Square</button>
     </div>
 
     <div id="receiptArea"></div>
@@ -201,6 +201,8 @@
   <div>Contact us at support@amiteatea.com</div>
 </footer>
 
+<script src="pos-config.js"></script>
+<script src="pos-core.js"></script>
 <script src="script.js"></script>
 </body>
 </html>
