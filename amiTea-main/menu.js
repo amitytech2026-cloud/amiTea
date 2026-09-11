@@ -38,11 +38,11 @@ const MENU=[
   {
     title:'Fruit & Tea',
     fruitAndTeaItems:[
-      ['Strawberry/Mango + Black/Green/Matcha Tea','$7.00'],
+      ['Fruit + tea','$7.00'],
+      ['Fruit + tea · lemonade','$8.00'],
+      ['Fruit + tea · fizzy','$8.00'],
       ['Fruit + tea · whole or 2% milk latte','$7.50'],
-      ['Fruit + tea · oat milk latte','$8.00'],
-      ['Strawberry/Mango + Matcha · lemonade','$8.00'],
-      ['Strawberry/Mango + Matcha · fizzy','$8.00']
+      ['Fruit + tea · oat milk latte','$8.00']
     ]
   }
 ];
