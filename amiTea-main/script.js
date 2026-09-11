@@ -1,6 +1,7 @@
 const state={size:'16oz',temp:null,basetype:null,fruit:null,tea:null,sweetness:null,add:null,boba:null,bobaPrice:0,qty:1};
 let menuTeaOptions=null;
 let menuAddOptions=null;
+let menuMatchaFizzy=false;
 
 const DANE_COUNTY_TAX_RATE=0.055;
 const JIM_PROCESSING_RATE=0.0199;
@@ -31,9 +32,9 @@ const MENU=[
       ['Strawberry Fruit','$6.00'],
       ['Strawberry . Whole or 2% milk latte','$6.50'],
       ['Strawberry . oat milk latte','$7.00'],
-      ['Blueberry Fruit','$6.00'],
-      ['Blueberry . Whole or 2% milk latte','$6.50'],
-      ['Blueberry . oat milk latte','$7.00'],
+      [' Fruit','$6.00'],
+      [' . Whole or 2% milk latte','$6.50'],
+      [' . oat milk latte','$7.00'],
       ['Mango Fruit','$7.00'],
       ['Mango . Whole or 2% milk latte','$7.50'],
       ['Mango . oat milk latte','$8.00']
@@ -45,9 +46,9 @@ const MENU=[
         ['Strawberry + Black/Green/Matcha Tea','$7.00'],
         ['Strawberry + Black/Green/Matcha Tea . Whole or 2% milk latte','$7.50'],
         ['Strawberry + Black/Green/Matcha Tea . oat milk latte','$8.00'],
-        ['Blueberry + Black/Green/Matcha Tea','$7.00'],
-        ['Blueberry + Black/Green/Matcha Tea . Whole or 2% milk latte','$7.50'],
-        ['Blueberry + Black/Green/Matcha Tea . oat milk latte','$8.00'],
+        [' + Black/Green/Matcha Tea','$7.00'],
+        [' + Black/Green/Matcha Tea . Whole or 2% milk latte','$7.50'],
+        [' + Black/Green/Matcha Tea . oat milk latte','$8.00'],
         ['Mango + Black/Green/Matcha Tea','$7.00'],
         ['Mango + Black/Green/Matcha Tea . Whole or 2% milk latte','$7.50'],
         ['Mango + Black/Green/Matcha Tea . oat milk latte','$8.00'],
@@ -144,6 +145,7 @@ document.addEventListener('click',e=>{
     applyBaseRules();
     applyTeaRules();
     applyMatchaRules();
+    applyTemperatureRules();
   }
   if(g==='fruit'){
     state.fruit=opt.dataset.val;
@@ -167,6 +169,7 @@ document.addEventListener('click',e=>{
     applyBaseRules();
     applyTeaRules();
     applyMatchaRules();
+    applyTemperatureRules();
   }
   if(g==='sweetness'||g==='unsweetness'){
     state.sweetness=opt.dataset.val;
@@ -240,7 +243,7 @@ function applyTemperatureRules(){
   const hot=document.querySelector('.opt[data-group="temp"][data-val="Hot"]');
   const sparklingOption=document.querySelector('.opt[data-group="add"][data-val="Fizzy"]');
   if(!hot || !sparklingOption) return;
-  const sparkling=state.add==='Fizzy';
+  const sparkling=state.add==='Fizzy' || menuMatchaFizzy;
   const hotSelected=state.temp==='Hot';
   hot.classList.toggle('disabled',sparkling);
   hot.disabled=sparkling;
@@ -306,6 +309,7 @@ function applyMenuPreset(){
   if(!menuItem) return;
 
   const item=menuItem.toLowerCase();
+  menuMatchaFizzy=item.includes('matcha') && item.includes('fizzy');
   if(item.includes('whole or 2% milk')) menuAddOptions=['Whole milk','2% milk'];
   else if(item.includes('oat milk')) menuAddOptions=['Oat milk'];
   else if(item.includes('lemonade')) menuAddOptions=['Lemonade'];
@@ -325,7 +329,7 @@ function applyMenuPreset(){
   else if(item.includes('black') && !item.includes('oolong')) selectPresetOption('tea','Black');
 
   if(item.includes('strawberry') && !item.includes('blueberry') && !item.includes('mango')) selectPresetOption('fruit','Strawberry');
-  else if(item.includes('blueberry') && !item.includes('strawberry') && !item.includes('mango')) selectPresetOption('fruit','Blueberry');
+  else if(item.includes('blueberry') && !item.includes('strawberry') && !item.includes('mango')) selectPresetOption('fruit','');
   else if(item.includes('mango') && !item.includes('strawberry') && !item.includes('blueberry')) selectPresetOption('fruit','Mango');
 
   if(item.includes('oat milk')) selectPresetOption('add','Oat milk');

@@ -67,6 +67,19 @@ header img {
 .menu-page .menu-group h3 { display: flex; align-items: center; justify-content: center; gap: 22px; font-size: 1.2rem; margin: 0 0 10px; }
 .menu-page .menu-group h3::before, .menu-page .menu-group h3::after { content: ""; width: 64px; height: 2px; background: var(--gold); }
 .menu-page .menu-items { display: grid; grid-template-columns: 1fr; gap: 6px; }
+.menu-page .tea-menu-columns { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+.menu-page .tea-menu-column { min-width: 0; }
+.menu-page .tea-base { width: 100%; display: flex; justify-content: space-between; gap: 8px; padding: 6px 8px 10px; border: 0; border-bottom: 1px solid var(--line); background: transparent; color: var(--green-deep); font: inherit; font-family: "Fraunces", serif; font-size: 1.05rem; font-weight: 600; text-align: left; cursor: pointer; }
+.menu-page .tea-base:hover, .menu-page .tea-base:focus-visible { color: var(--gold-deep); }
+.menu-page .tea-base:focus-visible, .menu-page .menu-item:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+.menu-page .tea-latte-title { padding: 12px 8px 3px; font-family: "Fraunces", serif; font-style: italic; font-size: .95rem; color: var(--ink); }
+.menu-page .fruit-menu-columns { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+.menu-page .fruit-menu-column { min-width: 0; }
+.menu-page .fruit-menu-spacer { min-height: 100%; display: flex; align-items: center; justify-content: center; padding: 30px 10px; }
+.menu-page .fruit-menu-spacer img { display: block; width: min(130px, 100%); height: auto; mix-blend-mode: multiply; }
+.menu-page .fruit-base { width: 100%; display: flex; justify-content: space-between; gap: 8px; padding: 6px 8px 10px; border: 0; border-bottom: 1px solid var(--line); background: transparent; color: var(--green-deep); font: inherit; font-family: "Fraunces", serif; font-size: 1.05rem; font-weight: 600; text-align: left; cursor: pointer; }
+.menu-page .fruit-base:hover, .menu-page .fruit-base:focus-visible { color: var(--gold-deep); }
+.menu-page .fruit-base:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
 .menu-page .menu-item { width: 100%; border: 0; border-radius: 6px; background: transparent; padding: 6px 8px; align-items: baseline; gap: 8px; font: inherit; font-size: .98rem; text-align: left; color: var(--ink); cursor: pointer; transition: background .2s, color .2s; }
 .menu-page .menu-item:hover, .menu-page .menu-item:focus-visible { background: rgba(213, 154, 44, .12); color: var(--green-deep); }
 .menu-page .menu-item:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
@@ -342,4 +355,7 @@ footer { text-align: center; padding: 20px; font-size: .85rem; color: var(--gree
 @media (max-width: 560px) {
   .grid.three { grid-template-columns: 1fr; }
   .steps .s { font-size: .72rem; }
+  .menu-page .tea-menu-columns { grid-template-columns: 1fr; gap: 16px; }
+  .menu-page .fruit-menu-columns { grid-template-columns: 1fr; gap: 16px; }
+  .menu-page .fruit-menu-spacer { min-height: 150px; padding: 20px 10px; }
 }
