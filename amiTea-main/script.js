@@ -1,6 +1,8 @@
 const state={size:'16oz',temp:null,basetype:null,fruit:null,tea:null,sweetness:null,add:null,boba:null,bobaPrice:0,qty:1};
 let menuTeaOptions=null;
+let menuFruitOptions=null;
 let menuAddOptions=null;
+let menuBasetypeOption=null;
 let menuMatchaFizzy=false;
 
 const DANE_COUNTY_TAX_RATE=0.055;
@@ -139,7 +141,8 @@ document.addEventListener('click',e=>{
     document.getElementById('sweetBlock').style.display='none';
     applyBaseRules();
     applyTeaRules();
-    applyMatchaRules();
+    applyFruitRules();
+    applyAddRules();
     applyTemperatureRules();
   }
   if(g==='fruit'){
@@ -151,6 +154,7 @@ document.addEventListener('click',e=>{
     }
     applyBaseRules();
     applyTeaRules();
+    applyFruitRules();
     applyAddRules();
   }
   if(g==='tea'){
@@ -163,7 +167,8 @@ document.addEventListener('click',e=>{
     document.getElementById('sweetBlock').style.display=state.basetype==='tea'?'block':'none';
     applyBaseRules();
     applyTeaRules();
-    applyMatchaRules();
+    applyFruitRules();
+    applyAddRules();
     applyTemperatureRules();
   }
   if(g==='sweetness'||g==='unsweetness'){
@@ -179,78 +184,90 @@ document.addEventListener('click',e=>{
 
   refreshNext();
   renderSoFar();
-    applyAddRules();
 });
 
-// Fruit and tea combinations are restricted for Fruit & Tea drinks.
 function applyTeaRules(){
-  const restrictions=menuTeaOptions
-    ? ['Matcha'].filter(tea=>!menuTeaOptions.includes(tea))
-    : (state.tea==='Black'||state.tea==='Green' ? ['Matcha'] : []);
   document.querySelectorAll('.opt[data-group="tea"]').forEach(o=>{
-    const disabled=restrictions.includes(o.dataset.val);
-    o.classList.toggle('disabled',disabled);
-    if(disabled && state.tea===o.dataset.val){
-      state.tea=null;o.classList.remove('sel');
+    const disabled = !!menuTeaOptions && !menuTeaOptions.includes(o.dataset.val);
+    o.classList.toggle('disabled', disabled);
+    o.disabled = disabled;
+    o.setAttribute('aria-disabled', String(disabled));
+    if(disabled && state.tea === o.dataset.val){
+      state.tea = null;
+      o.classList.remove('sel');
+    }
+  });
+}
+
+function applyFruitRules(){
+  document.querySelectorAll('.opt[data-group="fruit"]').forEach(o=>{
+    const disabled = !!menuFruitOptions && !menuFruitOptions.includes(o.dataset.val);
+    o.classList.toggle('disabled', disabled);
+    o.disabled = disabled;
+    o.setAttribute('aria-disabled', String(disabled));
+    if(disabled && state.fruit === o.dataset.val){
+      state.fruit = null;
+      o.classList.remove('sel');
     }
   });
 }
 
 function applyBaseRules(){
   document.querySelectorAll('.opt[data-group="basetype"]').forEach(option=>{
-    const disabled=!!state.basetype && option.dataset.val!==state.basetype;
-    option.classList.toggle('disabled',disabled);
-    option.disabled=disabled;
-    option.setAttribute('aria-disabled',String(disabled));
+    const disabled = !!menuBasetypeOption && option.dataset.val !== menuBasetypeOption;
+    option.classList.toggle('disabled', disabled);
+    option.disabled = disabled;
+    option.setAttribute('aria-disabled', String(disabled));
   });
 }
 
-function applyMatchaRules(){
-  const addOptions=[...document.querySelectorAll('.opt[data-group="add"]')];
-  const teaOnly=state.basetype==='tea' && (state.tea==='Matcha'||((state.tea==='Black'||state.tea==='Green')&&!menuAddOptions));
-  if(teaOnly){
-    const noAdd=addOptions.find(option=>option.dataset.val==='No add');
-    if(noAdd){
-      state.add='No add';
-      noAdd.disabled=false;
-      noAdd.classList.remove('disabled');
-      noAdd.click();
-    }
-  }
-  applyAddRules();
-}
-
 function applyAddRules(){
-  const addOptions=[...document.querySelectorAll('.opt[data-group="add"]')];
-  const teaOnly=state.basetype==='tea' && (state.tea==='Matcha'||((state.tea==='Black'||state.tea==='Green')&&!menuAddOptions));
+  const addOptions = [...document.querySelectorAll('.opt[data-group="add"]')];
   addOptions.forEach(option=>{
-    const allowed=menuAddOptions || (state.add ? [state.add] : null);
-    const disabled=teaOnly
-      ? option.dataset.val!=='No add'
-      : !!allowed && !allowed.includes(option.dataset.val);
-    option.classList.toggle('disabled',disabled);
-    option.disabled=disabled;
-    option.setAttribute('aria-disabled',String(disabled));
+    let disabled = false;
+    if (menuAddOptions) {
+      disabled = !menuAddOptions.includes(option.dataset.val);
+    } else {
+      // Freeform builder rule: straight matcha does not have lemonade on menu
+      if (state.basetype === 'tea' && state.tea === 'Matcha' && option.dataset.val === 'Lemonade') {
+        disabled = true;
+      }
+    }
+    option.classList.toggle('disabled', disabled);
+    option.disabled = disabled;
+    option.setAttribute('aria-disabled', String(disabled));
+    if(disabled && state.add === option.dataset.val){
+      state.add = null;
+      option.classList.remove('sel');
+    }
   });
 }
 
 function applyTemperatureRules(){
-  const hot=document.querySelector('.opt[data-group="temp"][data-val="Hot"]');
-  const sparklingOption=document.querySelector('.opt[data-group="add"][data-val="Fizzy"]');
+  const hot = document.querySelector('.opt[data-group="temp"][data-val="Hot"]');
+  const sparklingOption = document.querySelector('.opt[data-group="add"][data-val="Fizzy"]');
   if(!hot || !sparklingOption) return;
-  const sparkling=state.add==='Fizzy' || menuMatchaFizzy;
-  const hotSelected=state.temp==='Hot';
-  hot.classList.toggle('disabled',sparkling);
-  hot.disabled=sparkling;
-  hot.setAttribute('aria-disabled',String(sparkling));
-  sparklingOption.classList.toggle('disabled',hotSelected);
-  sparklingOption.disabled=hotSelected;
-  sparklingOption.setAttribute('aria-disabled',String(hotSelected));
-  if(sparkling && state.temp!=='Iced') selectPresetOption('temp','Iced');
-  if(hotSelected && sparkling){
-    state.add=null;
-    sparklingOption.classList.remove('sel');
-    applyAddRules();
+  const sparkling = state.add === 'Fizzy' || menuMatchaFizzy;
+  const hotSelected = state.temp === 'Hot';
+  hot.classList.toggle('disabled', sparkling);
+  hot.disabled = sparkling;
+  hot.setAttribute('aria-disabled', String(sparkling));
+  if (hotSelected && !menuAddOptions) {
+    sparklingOption.classList.add('disabled');
+    sparklingOption.disabled = true;
+    sparklingOption.setAttribute('aria-disabled', 'true');
+  } else if (!menuAddOptions) {
+    sparklingOption.classList.remove('disabled');
+    sparklingOption.disabled = false;
+    sparklingOption.setAttribute('aria-disabled', 'false');
+  }
+  if(sparkling && state.temp === 'Hot') {
+    state.temp = 'Iced';
+    const icedOpt = document.querySelector('.opt[data-group="temp"][data-val="Iced"]');
+    if (icedOpt) {
+      document.querySelectorAll('.opt[data-group="temp"]').forEach(o=>o.classList.remove('sel'));
+      icedOpt.classList.add('sel');
+    }
   }
 }
 
@@ -296,42 +313,101 @@ function refreshNext(){
 function selectPresetOption(group,value){
   const option=[...document.querySelectorAll(`.opt[data-group="${group}"]`)]
     .find(opt=>opt.dataset.val===value);
-  if(option) option.click();
+  if(!option) return;
+
+  option.disabled=false;
+  option.classList.remove('disabled');
+  option.setAttribute('aria-disabled','false');
+  option.click();
+}
+
+function normalizeMenuPresetText(value=''){
+  return String(value ?? '').toLowerCase()
+    .replace(/\+/g,' ')
+    .replace(/&/g,' and ')
+    .replace(/[•·]/g,' ')
+    .replace(/[+]/g,' plus ')
+    .replace(/%/g,' percent ')
+    .replace(/\s+/g,' ')
+    .trim();
+}
+
+function resolvePresetOptions(item){
+  const text=normalizeMenuPresetText(item);
+  const teaOptions=[];
+  const fruitOptions=[];
+  const addOptions=[];
+
+  const hasTeaWord = /\btea\b/.test(text) || /\bblack\b/.test(text) || /\bgreen\b/.test(text) || /\bmatcha\b/.test(text);
+  const hasFruitWord = /\bfruit\b/.test(text) || /\bstrawberry\b/.test(text) || /\bmango\b/.test(text);
+  const isMixed = /(?:fruit.*tea|strawberry.*tea|mango.*tea|tea.*fruit|tea.*strawberry|tea.*mango)/.test(text) || (hasFruitWord && hasTeaWord && !/no add/.test(text));
+
+  if(/black and green and matcha|black green matcha|black\/green\/matcha|black\/green\/matcha tea/.test(text) || /(?:^|\s)(black|green|matcha)(?:\s|\/| and )*(?:black|green|matcha)/.test(text)) {
+    teaOptions.push('Black','Green','Matcha');
+  } else {
+    if(/\bmatcha\b/.test(text)) teaOptions.push('Matcha');
+    if(/\bblack\b/.test(text)) teaOptions.push('Black');
+    if(/\bgreen\b/.test(text)) teaOptions.push('Green');
+  }
+
+  if(/\bstrawberry\b/.test(text)) fruitOptions.push('Strawberry');
+  if(/\bmango\b/.test(text)) fruitOptions.push('Mango');
+  if((isMixed || /\bfruit\b/.test(text)) && !fruitOptions.length) {
+    fruitOptions.push('Strawberry','Mango');
+  }
+
+  if(/whole or 2 percent milk|whole or 2% milk|whole milk/.test(text)) addOptions.push('Whole milk');
+  if(/2 percent milk|2% milk/.test(text)) addOptions.push('2% milk');
+  if(/oat milk/.test(text)) addOptions.push('Oat milk');
+  if(/lemonade/.test(text)) addOptions.push('Lemonade');
+  if(/fizzy/.test(text)) addOptions.push('Fizzy');
+  if(!addOptions.length && /no add|pure|straight/.test(text)) addOptions.push('No add');
+
+  const baseType = isMixed ? 'mixed' : (fruitOptions.length > 0 && !hasTeaWord ? 'fruit' : 'tea');
+
+  return {
+    baseType,
+    teaOptions: teaOptions.length ? [...new Set(teaOptions)] : null,
+    fruitOptions: fruitOptions.length ? [...new Set(fruitOptions)] : null,
+    addOptions: addOptions.length ? [...new Set(addOptions)] : null,
+    matchaFizzy: /fizzy/.test(text)
+  };
 }
 
 function applyMenuPreset(){
-  const menuItem=new URLSearchParams(window.location.search).get('menuItem');
-  if(!menuItem) return;
+  const menuItemParam=new URLSearchParams(window.location.search).get('menuItem');
+  if(!menuItemParam) return;
 
-  const item=menuItem.toLowerCase();
-  menuMatchaFizzy=item.includes('matcha') && item.includes('fizzy');
-  if(item.includes('whole or 2% milk')) menuAddOptions=['Whole milk','2% milk'];
-  else if(item.includes('oat milk')) menuAddOptions=['Oat milk'];
-  else if(item.includes('lemonade')) menuAddOptions=['Lemonade'];
-  else if(item.includes('fizzy')) menuAddOptions=['Fizzy'];
-  if(item.includes('black/oolong/matcha')) menuTeaOptions=['Black','Green','Matcha'];
-  else if(item.includes('black') && item.includes('oolong')) menuTeaOptions=['Black','Green'];
-  else if(item.includes('matcha')) menuTeaOptions=['Matcha'];
-  else if(item.includes('black')) menuTeaOptions=['Black'];
-  else if(item.includes('oolong')) menuTeaOptions=['Green'];
-  const hasFruit= item.includes('fruit') || item.includes('strawberry') || item.includes('blueberry') || item.includes('mango');
-  if(item.includes('fruit & tea') || item.includes(' + ')) selectPresetOption('basetype','mixed');
-  else if(hasFruit) selectPresetOption('basetype','fruit');
-  else selectPresetOption('basetype','tea');
+  const preset=resolvePresetOptions(menuItemParam);
 
-  if(item.includes('matcha') && !item.includes('black/oolong/matcha')) selectPresetOption('tea','Matcha');
-  else if(item.includes('oolong') && !item.includes('black')) selectPresetOption('tea','Green');
-  else if(item.includes('black') && !item.includes('oolong')) selectPresetOption('tea','Black');
+  menuTeaOptions=preset.teaOptions;
+  menuFruitOptions=preset.fruitOptions;
+  menuAddOptions=preset.addOptions;
+  menuBasetypeOption=preset.baseType;
+  menuMatchaFizzy=preset.matchaFizzy;
 
-  if(item.includes('strawberry') && !item.includes('blueberry') && !item.includes('mango')) selectPresetOption('fruit','Strawberry');
-  else if(item.includes('blueberry') && !item.includes('strawberry') && !item.includes('mango')) selectPresetOption('fruit','');
-  else if(item.includes('mango') && !item.includes('strawberry') && !item.includes('blueberry')) selectPresetOption('fruit','Mango');
+  state.temp = state.temp || 'Iced';
+  state.basetype = preset.baseType;
+  state.fruit = null;
+  state.tea = null;
+  state.sweetness = null;
+  state.add = null;
 
-  if(item.includes('oat milk')) selectPresetOption('add','Oat milk');
-  else if(item.includes('whole milk')) selectPresetOption('add','Whole milk');
-  else if(item.includes('lemonade') && !item.includes('fizzy')) selectPresetOption('add','Lemonade');
-  else if(item.includes('fizzy') && !item.includes('lemonade')) selectPresetOption('add','Fizzy');
+  selectPresetOption('basetype', preset.baseType);
+  if(preset.teaOptions && preset.teaOptions.length===1) {
+    selectPresetOption('tea', preset.teaOptions[0]);
+  }
+  if(preset.fruitOptions && preset.fruitOptions.length===1) {
+    selectPresetOption('fruit', preset.fruitOptions[0]);
+  }
+  if(preset.addOptions && preset.addOptions.length===1) {
+    selectPresetOption('add', preset.addOptions[0]);
+  }
 
+  applyBaseRules();
+  applyTeaRules();
+  applyFruitRules();
+  applyAddRules();
   applyTemperatureRules();
 
   showPanel(0);
@@ -409,7 +485,10 @@ function commitDrink(){
 function resetBuilder(){
   Object.assign(state,{size:'16oz',temp:null,basetype:null,fruit:null,tea:null,sweetness:null,add:null,boba:null,bobaPrice:0,qty:1});
   menuTeaOptions=null;
+  menuFruitOptions=null;
   menuAddOptions=null;
+  menuBasetypeOption=null;
+  menuMatchaFizzy=false;
   document.querySelectorAll('.opt.sel').forEach(o=>o.classList.remove('sel'));
   document.getElementById('fruitBlock').style.display='none';
   document.getElementById('teaBlock').style.display='none';
@@ -421,7 +500,8 @@ function resetBuilder(){
   reached=0;
   applyBaseRules();
   applyTeaRules();
-  applyMatchaRules();
+  applyFruitRules();
+  applyAddRules();
   applyTemperatureRules();
   renderSoFar();
 }

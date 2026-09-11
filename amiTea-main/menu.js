@@ -5,17 +5,17 @@ const MENU=[
       {
         name:'Black Tea',
         price:'$5.00',
-        items:[['Whole Milk','$5.50'],['2% Milk','$5.50'],['Oat Milk','$6.00'],['Lemonade','$6.00'],['Fizzy','$6.00']]
+        items:[['Lemonade','$6.00'],['Fizzy','$6.00'], ['Latte * Whole Milk','$6.50'],['Latte * 2% Milk','$6.50'],['Latte * Oat Milk','$7.00']]
       },
       {
         name:'Green Tea',
         price:'$5.00',
-        items:[['Whole Milk','$5.50'],['2% Milk','$5.50'],['Oat Milk','$6.00'],['Lemonade','$6.00'],['Fizzy','$6.00']]
+        items:[['Lemonade','$6.00'],['Fizzy','$6.00'], ['Latte * Whole Milk','$6.50'],['Latte * 2% Milk','$6.50'],['Latte * Oat Milk','$7.00']]
       },
       {
         name:'Matcha',
         price:'$6.00',
-        items:[['Whole Milk','$6.50'],['2% Milk','$6.50'],['Oat Milk','$7.00'],['Fizzy','$7.00']]
+        items:[['Fizzy','$7.00'],['Latte * Whole Milk','$6.50'],['Latte * 2% Milk','$6.50'],['Latte * Oat Milk','$7.00']]
       }
     ]
   },
@@ -25,13 +25,13 @@ const MENU=[
       {
         name:'Strawberry',
         price:'$6.00',
-        items:[['Whole Milk','$6.50'],['2% Milk','$6.50'],['Oat Milk','$7.00'],['Lemonade','$7.00'],['Fizzy','$7.00']]
+        items:[['Lemonade','$7.00'],['Fizzy','$7.00'],['Latte * Whole Milk','$6.50'],['Latte * 2% Milk','$6.50'],['Latte * Oat Milk','$7.00']]
       },
       {},
       {
         name:'Mango',
         price:'$6.00',
-        items:[['Whole Milk','$6.50'],['2% Milk','$6.50'],['Oat Milk','$7.00'],['Lemonade','$7.00'],['Fizzy','$7.00']]
+        items:[['Lemonade','$7.00'],['Fizzy','$7.00'],['Latte * Whole Milk','$6.50'],['Latte * 2% Milk','$6.50'],['Latte * Oat Milk','$7.00']]
       }
     ]
   },

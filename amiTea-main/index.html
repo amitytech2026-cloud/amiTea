@@ -16,8 +16,8 @@
   <h1 class="kicker">Build Your <em>amiTEA</em></h1>
   <p class="tag">tea among friends</p>
   <nav class="page-nav" aria-label="Main navigation">
-    <a class="btn ghost active" href="index.html">Step Builder</a>
-    <a class="btn ghost" href="menu.html">Menu &amp; Search</a>
+    <a class="btn ghost active" href="index.html">Build your amiTEA</a>
+    <a class="btn ghost" href="menu.html">View menu</a>
   </nav>
 </header>
 
@@ -179,6 +179,12 @@
   <div>Contact us at support@amiteatea.com</div>
 </footer>
 
+<script>
+  const params = new URLSearchParams(window.location.search);
+  if (!params.get('menuItem')) {
+    window.location.replace('menu.html');
+  }
+</script>
 <script src="pos-config.js"></script>
 <script src="pos-core.js"></script>
 <script src="script.js"></script>

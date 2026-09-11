@@ -3,30 +3,57 @@
  */
 
 const POS_CATALOG = [
-  // Teas
-  { id: "blk", name: "Black Tea", base: "Black Tea", price: 5.00, cat: "Tea" },
-  { id: "grn", name: "Green Tea", base: "Green Tea", price: 5.00, cat: "Tea" },
-  { id: "mat", name: "Matcha", base: "Matcha", price: 6.00, cat: "Tea" },
+  // Tea menu matches the customer menu names and pricing
+  { id: "tea_black", name: "Black Tea", base: "Black", price: 5.00, cat: "Tea" },
+  { id: "tea_green", name: "Green Tea", base: "Green", price: 5.00, cat: "Tea" },
+  { id: "tea_matcha", name: "Matcha", base: "Matcha", price: 6.00, cat: "Tea" },
+  { id: "tea_black_latte_whole", name: "Black Tea · Whole milk", base: "Black", add: "Whole milk", price: 5.50, cat: "Tea" },
+  { id: "tea_black_latte_2pct", name: "Black Tea · 2% milk", base: "Black", add: "2% milk", price: 5.50, cat: "Tea" },
+  { id: "tea_black_latte_oat", name: "Black Tea · Oat milk", base: "Black", add: "Oat milk", price: 6.00, cat: "Tea" },
+  { id: "tea_black_lemonade", name: "Black Tea · Lemonade", base: "Black", add: "Lemonade", price: 6.00, cat: "Tea" },
+  { id: "tea_black_fizzy", name: "Black Tea · Fizzy", base: "Black", add: "Fizzy", price: 6.00, cat: "Tea" },
+  { id: "tea_green_latte_whole", name: "Green Tea · Whole milk", base: "Green", add: "Whole milk", price: 5.50, cat: "Tea" },
+  { id: "tea_green_latte_2pct", name: "Green Tea · 2% milk", base: "Green", add: "2% milk", price: 5.50, cat: "Tea" },
+  { id: "tea_green_latte_oat", name: "Green Tea · Oat milk", base: "Green", add: "Oat milk", price: 6.00, cat: "Tea" },
+  { id: "tea_green_lemonade", name: "Green Tea · Lemonade", base: "Green", add: "Lemonade", price: 6.00, cat: "Tea" },
+  { id: "tea_green_fizzy", name: "Green Tea · Fizzy", base: "Green", add: "Fizzy", price: 6.00, cat: "Tea" },
+  { id: "tea_matcha_latte_whole", name: "Matcha · Whole milk", base: "Matcha", add: "Whole milk", price: 6.50, cat: "Tea" },
+  { id: "tea_matcha_latte_2pct", name: "Matcha · 2% milk", base: "Matcha", add: "2% milk", price: 6.50, cat: "Tea" },
+  { id: "tea_matcha_latte_oat", name: "Matcha · Oat milk", base: "Matcha", add: "Oat milk", price: 7.00, cat: "Tea" },
+  { id: "tea_matcha_fizzy", name: "Matcha · Fizzy", base: "Matcha", add: "Fizzy", price: 7.00, cat: "Tea" },
 
-  // Milk Lattes
-  { id: "blk_latte", name: "Black Tea Latte (Whole)", base: "Black Tea", add: "Whole milk", price: 5.50, cat: "Latte" },
-  { id: "blk_oat", name: "Black Tea Oat Latte", base: "Black Tea", add: "Oat milk", price: 6.00, cat: "Latte" },
-  { id: "grn_latte", name: "Green Tea Latte (Whole)", base: "Green Tea", add: "Whole milk", price: 5.50, cat: "Latte" },
-  { id: "grn_oat", name: "Green Tea Oat Latte", base: "Green Tea", add: "Oat milk", price: 6.00, cat: "Latte" },
-  { id: "mat_latte", name: "Matcha Latte (Whole)", base: "Matcha", add: "Whole milk", price: 6.50, cat: "Latte" },
-  { id: "mat_oat", name: "Matcha Oat Latte", base: "Matcha", add: "Oat milk", price: 7.00, cat: "Latte" },
+  // Fruit menu matches the customer menu names and pricing
+  { id: "fruit_strawberry", name: "Strawberry", base: "Strawberry", price: 6.00, cat: "Fruit" },
+  { id: "fruit_strawberry_fizzy", name: "Strawberry · Fizzy", base: "Strawberry", add: "Fizzy", price: 7.00, cat: "Fruit" },
+  { id: "fruit_strawberry_lemonade", name: "Strawberry · Lemonade", base: "Strawberry", add: "Lemonade", price: 7.00, cat: "Fruit" },
+  { id: "fruit_strawberry_latte_whole", name: "Strawberry · Whole milk", base: "Strawberry", add: "Whole milk", price: 6.50, cat: "Fruit" },
+  { id: "fruit_strawberry_latte_2pct", name: "Strawberry · 2% milk", base: "Strawberry", add: "2% milk", price: 6.50, cat: "Fruit" },
+  { id: "fruit_strawberry_latte_oat", name: "Strawberry · Oat milk", base: "Strawberry", add: "Oat milk", price: 7.00, cat: "Fruit" },
+  { id: "fruit_mango", name: "Mango Fruit", base: "Mango", price: 6.00, cat: "Fruit" },
+  { id: "fruit_mango_lemonade", name: "Mango · Lemonade", base: "Mango", add: "Lemonade", price: 7.00, cat: "Fruit" },
+  { id: "fruit_mango_fizzy", name: "Mango · Fizzy", base: "Mango", add: "Fizzy", price: 7.00, cat: "Fruit" },
+  { id: "fruit_mango_latte_whole", name: "Mango · Whole milk", base: "Mango", add: "Whole milk", price: 6.50, cat: "Fruit" },
+  { id: "fruit_mango_latte_2pct", name: "Mango · 2% milk", base: "Mango", add: "2% milk", price: 6.50, cat: "Fruit" },
+  { id: "fruit_mango_latte_oat", name: "Mango · Oat milk", base: "Mango", add: "Oat milk", price: 7.00, cat: "Fruit" },
 
-  // Fruits & Sparklings
-  { id: "sb", name: "Strawberry Infusion", base: "Strawberry", price: 6.00, cat: "Fruit" },
-  { id: "sb_latte", name: "Strawberry Milk Latte", base: "Strawberry", add: "Whole milk", price: 6.50, cat: "Fruit" },
-  { id: "sb_fizzy", name: "Strawberry Sparkling", base: "Strawberry", add: "Fizzy", price: 7.00, cat: "Fruit" },
-  { id: "mg", name: "Mango Infusion", base: "Mango", price: 6.00, cat: "Fruit" },
-  { id: "mg_latte", name: "Mango Milk Latte", base: "Mango", add: "Whole milk", price: 6.50, cat: "Fruit" },
-  { id: "mg_lemon", name: "Mango Lemonade", base: "Mango", add: "Lemonade", price: 7.00, cat: "Fruit" }
+  // Fruit & Tea menu matches the customer menu
+  { id: "mix_strawberry_blacktealatte_whole", name: "Strawberry  ·  Black Tea  ·  Whole Milk", base: "Strawberry  ·  Black Tea Latte", price: 7.50, cat: "Fruit & Tea" },
+  { id: "mix_strawberry_blacktealatte_2pct", name: "Strawberry  ·  Black Tea  ·  2% Milk", base: "Strawberry  ·  Black Tea Latte", price: 7.50, cat: "Fruit & Tea" },
+  { id: "mix_strawberry_blacktealatte_oat", name: "Strawberry  ·  Black Tea  ·  Oat Milk", base: "Strawberry  ·  Black Tea Latte", price: 8.00, cat: "Fruit & Tea" },
+  { id: "mix_strawberry_greentealatte_whole", name: "Strawberry  ·  Green Tea  ·  Whole Milk", base: "Strawberry  ·  Green Tea latte", price: 7.50, cat: "Fruit & Tea" },
+  { id: "mix_strawberry_greentealatte_2pct", name: "Strawberry  ·  Green Tea  ·  2 % Milk", base: "Strawberry  ·  Green Tea latte", price: 7.50, cat: "Fruit & Tea" },
+  { id: "mix_strawberry_greentealatte_oat", name: "Strawberry  ·  Green Tea  ·  Oat Milk", base: "Strawberry  ·  Green Tea latte", price: 8.00, cat: "Fruit & Tea" },
+  { id: "mix_mango_blacktealatte_whole", name: "Mango  ·  Black Tea  ·  Whole Milk", base: "Mango  ·  Black Tea Latte", price: 7.50, cat: "Fruit & Tea" },
+  { id: "mix_mango_blacktealatte_2pct", name: "Mango  ·  Black Tea  ·  2% Milk", base: "Mango  ·  Black Tea Latte", price: 7.50, cat: "Fruit & Tea" },
+  { id: "mix_mango_blacktealatte_oat", name: "Mango  ·  Black Tea  ·  Oat Milk", base: "Mango  ·  Black Tea Latte", price: 8.00, cat: "Fruit & Tea" },
+  { id: "mix_mango_greentealatte_whole", name: "Mango  ·  Green Tea  ·  Whole Milk", base: "Mango  ·  Green Tea Latte", price: 7.50, cat: "Fruit & Tea" },
+  { id: "mix_mango_greentealatte_2pct", name: "Mango  ·  Green Tea  ·  2 % Milk", base: "Mango  ·  Green Tea Latte", price: 7.50, cat: "Fruit & Tea" },
+  { id: "mix_mango_greentealatte_oat", name: "Mango  ·  Green Tea  ·  Oat Milk", base: "Mango  ·  Green Tea Latte", price: 8.00, cat: "Fruit & Tea" },
 ];
 
 let cashierTicket = [];
 let activeCategory = "all";
+let selectedCatalogItemId = null;
 
 // DOM Elements
 const posItemsGrid = document.getElementById("posItemsGrid");
@@ -159,6 +186,11 @@ function initCashier() {
     });
   }
 
+  const sendSelectedToTicketBtn = document.getElementById("sendSelectedToTicketBtn");
+  if (sendSelectedToTicketBtn) {
+    sendSelectedToTicketBtn.addEventListener("click", addSelectedCatalogItemToTicket);
+  }
+
   // Category filter
   document.querySelectorAll("[data-pos-cat]").forEach(btn => {
     btn.addEventListener("click", () => {
@@ -250,18 +282,39 @@ function updateNextOrderNumber() {
   posActiveOrderNum.textContent = AmiPOS.generateOrderNumber();
 }
 
+function updateSelectedCatalogButtonState() {
+  const sendBtn = document.getElementById("sendSelectedToTicketBtn");
+  if (!sendBtn) return;
+  sendBtn.disabled = !selectedCatalogItemId;
+  sendBtn.textContent = "Send to Ticket";
+}
+
 function renderCatalog() {
   const filtered = POS_CATALOG.filter(item => {
     if (activeCategory === "all") return true;
     return item.cat === activeCategory;
   });
 
+  if (!filtered.some(item => item.id === selectedCatalogItemId)) {
+    selectedCatalogItemId = null;
+  }
+
   posItemsGrid.innerHTML = filtered.map(item => `
-    <button type="button" class="pos-tap-btn" onclick="addCatalogItemToTicket('${item.id}')">
+    <button type="button" class="pos-tap-btn ${selectedCatalogItemId === item.id ? "selected" : ""}" data-pos-item="${item.id}">
       <div class="p-name">${item.name}</div>
       <div class="p-price">$${item.price.toFixed(2)}</div>
     </button>
   `).join("");
+
+  posItemsGrid.querySelectorAll(".pos-tap-btn").forEach(button => {
+    button.addEventListener("click", () => {
+      selectedCatalogItemId = button.dataset.posItem;
+      renderCatalog();
+      updateSelectedCatalogButtonState();
+    });
+  });
+
+  updateSelectedCatalogButtonState();
 }
 
 window.addCatalogItemToTicket = function(itemId) {
@@ -289,8 +342,15 @@ window.addCatalogItemToTicket = function(itemId) {
     qty: 1
   });
 
+  selectedCatalogItemId = null;
+  renderCatalog();
   renderTicket();
 };
+
+function addSelectedCatalogItemToTicket() {
+  if (!selectedCatalogItemId) return;
+  addCatalogItemToTicket(selectedCatalogItemId);
+}
 
 function renderTicket() {
   const totals = AmiPOS.calculateTotals(cashierTicket, 0);
