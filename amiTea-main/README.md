@@ -19,7 +19,7 @@ Open http://localhost:8000 in your browser.
 | Screen | URL | Purpose |
 | :--- | :--- | :--- |
 | **Step-by-Step Builder** | [index.html](index.html) | Customer kiosk guided flow (Temp $\rightarrow$ Base $\rightarrow$ Milk $\rightarrow$ Boba $\rightarrow$ Quantity). |
-| **Menu & Search Catalog** | [menu.html](menu.html) | Customer search bar, category filters, quick drink customizer modal, and Square checkout. |
+| **Menu Catalog** | [menu.html](menu.html) | Customer search bar, category filters, quick drink customizer modal, and Square checkout. |
 | **Staff Cashier POS** | [cashier.html](cashier.html) | Staff touch register, location/tax selector, Square Terminal tender, and Cash change calculator. |
 | **Kitchen Display Board** | [kds.html](kds.html) | Real-time barista ticket board with drink tags (Hot/Iced, Sweetness, Milk, Boba) and queue progression. |
 

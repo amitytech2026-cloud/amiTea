@@ -1,6 +1,6 @@
 /**
  * amiTEA Barista Kitchen Display System (KDS)
- * Real-time queue for orders from Customer Builder, Menu & Search, and Cashier.
+ * Real-time queue for orders from Customer Builder, Menu, and Cashier.
  */
 
 const cardsNew = document.getElementById("cardsNew");
