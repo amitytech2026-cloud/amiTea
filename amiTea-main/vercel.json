@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    { "source": "/staff", "destination": "/cashier.html" },
+    { "source": "/staff/(.*)", "destination": "/cashier.html" },
+    { "source": "/customer", "destination": "/menu.html" },
+    { "source": "/customer/(.*)", "destination": "/menu.html" }
+  ]
+}
