@@ -33,7 +33,7 @@ Open http://localhost:8000 in your browser.
 
 ## Deploy to Vercel
 ```bash
-npx vercel --prod
+npx vercel --prod --yes
 ```
 ## Cashier interface /cashier.html
 ## Kitchen Board /kds.html
