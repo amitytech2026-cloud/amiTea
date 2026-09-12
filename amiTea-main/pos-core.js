@@ -6,6 +6,82 @@
 class AmiPOS {
   static STORAGE_ORDERS_KEY = "amitea_pos_orders";
   static STORAGE_CART_KEY = "amitea_shared_cart";
+  static API_URL = "/api/orders";
+  static _syncInterval = null;
+
+  static initSync() {
+    if (this._syncInterval) return;
+    this.syncFromRemote();
+    this._syncInterval = setInterval(() => {
+      this.syncFromRemote();
+    }, 2000);
+  }
+
+  static async syncFromRemote() {
+    try {
+      const res = await fetch(this.API_URL);
+      if (!res.ok) return;
+      const remoteOrders = await res.json();
+      if (!Array.isArray(remoteOrders)) return;
+
+      const localOrders = this.getOrders();
+      let changed = false;
+
+      const orderMap = new Map();
+      localOrders.forEach(o => orderMap.set(o.id, o));
+
+      remoteOrders.forEach(remote => {
+        const existing = orderMap.get(remote.id);
+        if (!existing) {
+          orderMap.set(remote.id, remote);
+          changed = true;
+          window.dispatchEvent(new CustomEvent("amitea:order-created", { detail: remote }));
+        } else if (existing.kitchenStatus !== remote.kitchenStatus) {
+          existing.kitchenStatus = remote.kitchenStatus;
+          existing.completedAt = remote.completedAt;
+          changed = true;
+          window.dispatchEvent(new CustomEvent("amitea:order-updated", { detail: existing }));
+        }
+      });
+
+      if (changed) {
+        const merged = Array.from(orderMap.values()).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        localStorage.setItem(this.STORAGE_ORDERS_KEY, JSON.stringify(merged));
+      }
+
+      for (const local of localOrders) {
+        if (!remoteOrders.some(r => r.id === local.id)) {
+          this.postToRemote(local);
+        }
+      }
+    } catch (err) {
+      // Offline fallback
+    }
+  }
+
+  static async postToRemote(order) {
+    try {
+      await fetch(this.API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(order)
+      });
+    } catch (err) {
+      // Offline fallback
+    }
+  }
+
+  static async patchRemoteStatus(orderId, kitchenStatus, completedAt) {
+    try {
+      await fetch(this.API_URL, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: orderId, kitchenStatus, completedAt })
+      });
+    } catch (err) {
+      // Offline fallback
+    }
+  }
 
   static getOrders() {
     try {
@@ -128,6 +204,9 @@ class AmiPOS {
     orders.unshift(newOrder);
     localStorage.setItem(this.STORAGE_ORDERS_KEY, JSON.stringify(orders));
 
+    // Post to remote API for multi-device sync
+    this.postToRemote(newOrder);
+
     // Clear active cart if this was placed from cart
     this.clearCart();
 
@@ -145,9 +224,22 @@ class AmiPOS {
         order.completedAt = new Date().toISOString();
       }
       localStorage.setItem(this.STORAGE_ORDERS_KEY, JSON.stringify(orders));
+
+      // Patch remote API for multi-device sync
+      this.patchRemoteStatus(orderId, newStatus, order.completedAt);
+
       window.dispatchEvent(new CustomEvent("amitea:order-updated", { detail: order }));
     }
     return order;
+  }
+}
+
+// Auto-start multi-device sync on load
+if (typeof window !== "undefined") {
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", () => AmiPOS.initSync());
+  } else {
+    AmiPOS.initSync();
   }
 }
 
