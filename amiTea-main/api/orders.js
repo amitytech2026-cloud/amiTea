@@ -1,48 +1,53 @@
-let ordersStore = [];
+import { createClient } from 'redis';
 
-async function redisCommand(command) {
-  const url = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
-  const token = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
-  if (!url || !token) return null;
+let client = null;
+
+async function getRedis() {
+  if (client && client.isOpen) {
+    return client;
+  }
+  const url = process.env.REDIS_URL || process.env.KV_URL;
+  if (!url) return null;
 
   try {
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(command)
-    });
-    const data = await res.json();
-    return data.result;
+    client = createClient({ url });
+    client.on('error', (err) => console.error('Redis Client Error:', err));
+    await client.connect();
+    return client;
   } catch (err) {
-    console.error('Redis connection error:', err);
+    console.error('Failed to connect to Redis:', err);
+    client = null;
     return null;
   }
 }
 
-async function getOrdersFromRedisOrMemory() {
-  const url = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
-  if (url) {
-    const result = await redisCommand(['GET', 'amitea_orders']);
-    if (result) {
-      try {
-        return typeof result === 'string' ? JSON.parse(result) : result;
-      } catch (e) {
-        return [];
+let inMemoryOrders = [];
+
+async function getOrders() {
+  const redis = await getRedis();
+  if (redis) {
+    try {
+      const data = await redis.get('amitea_orders');
+      if (data) {
+        return typeof data === 'string' ? JSON.parse(data) : data;
       }
+      return [];
+    } catch (err) {
+      console.error('Error fetching orders from Redis:', err);
     }
-    return [];
   }
-  return ordersStore;
+  return inMemoryOrders;
 }
 
-async function saveOrdersToRedisOrMemory(orders) {
-  ordersStore = orders;
-  const url = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
-  if (url) {
-    await redisCommand(['SET', 'amitea_orders', JSON.stringify(orders)]);
+async function saveOrders(orders) {
+  inMemoryOrders = orders;
+  const redis = await getRedis();
+  if (redis) {
+    try {
+      await redis.set('amitea_orders', JSON.stringify(orders));
+    } catch (err) {
+      console.error('Error saving orders to Redis:', err);
+    }
   }
 }
 
@@ -61,13 +66,13 @@ export default async function handler(req, res) {
 
   try {
     if (req.method === 'GET') {
-      const orders = await getOrdersFromRedisOrMemory();
+      const orders = await getOrders();
       return res.status(200).json(orders);
     }
 
     if (req.method === 'POST') {
       const newOrder = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
-      let orders = await getOrdersFromRedisOrMemory();
+      let orders = await getOrders();
       if (newOrder && newOrder.id) {
         const index = orders.findIndex(o => o.id === newOrder.id);
         if (index >= 0) {
@@ -75,7 +80,7 @@ export default async function handler(req, res) {
         } else {
           orders.unshift(newOrder);
         }
-        await saveOrdersToRedisOrMemory(orders);
+        await saveOrders(orders);
       }
       return res.status(200).json(orders);
     }
@@ -83,18 +88,18 @@ export default async function handler(req, res) {
     if (req.method === 'PATCH') {
       const patchData = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
       const { id, kitchenStatus, completedAt } = patchData || {};
-      let orders = await getOrdersFromRedisOrMemory();
+      let orders = await getOrders();
       const order = orders.find(o => o.id === id);
       if (order) {
         if (kitchenStatus) order.kitchenStatus = kitchenStatus;
         if (completedAt) order.completedAt = completedAt;
-        await saveOrdersToRedisOrMemory(orders);
+        await saveOrders(orders);
       }
       return res.status(200).json(orders);
     }
 
     if (req.method === 'DELETE') {
-      await saveOrdersToRedisOrMemory([]);
+      await saveOrders([]);
       return res.status(200).json({ success: true });
     }
 
