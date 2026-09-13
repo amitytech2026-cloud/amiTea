@@ -237,6 +237,10 @@
     </button>
     <a href="cashier.html" class="btn ghost active" style="padding:6px 14px; font-size:0.85rem; background:var(--green); color:var(--white);">Staff Register</a>
     <a href="kds.html" class="btn ghost" style="padding:6px 14px; font-size:0.85rem;">Kitchen Board</a>
+    <div style="display:flex; align-items:center; gap:6px; background:var(--cream-2); padding:4px 10px; border-radius:20px; border:1px solid var(--line);">
+      <span id="staffUserDisplay" style="font-size:0.82rem; font-weight:700; color:var(--green-deep);">👤 Staff</span>
+      <button type="button" class="btn ghost" id="staffLogoutBtn" style="padding:2px 8px; font-size:0.75rem; border-color:#c0392b; color:#c0392b;">Sign Out</button>
+    </div>
   </div>
 </div>
 
@@ -358,7 +362,7 @@
       <div style="font-size:2.5rem; margin-bottom:8px;">🔐</div>
       <h3 style="font-family:'Fraunces', serif; color:var(--green-deep); margin:0 0 6px;">Staff Bookkeeping Security</h3>
       <p class="sub" style="margin:0 0 14px;">Enter manager/staff PIN to view sales records.</p>
-      <input type="password" id="bkPinInput" class="field pin-field" maxlength="6" inputmode="numeric" placeholder="Enter PIN (226283)" style="margin:0 auto 12px; text-align:center; font-size:1.1rem; letter-spacing:3px;">
+      <input type="password" id="bkPinInput" class="field pin-field" maxlength="6" inputmode="numeric" placeholder="Enter PIN" style="margin:0 auto 12px; text-align:center; font-size:1.1rem; letter-spacing:3px;">
       <p class="co-error" id="bkPinError" hidden style="margin-bottom:10px;"></p>
       <button type="button" class="btn primary" id="unlockBkBtn">Unlock Sales Records</button>
     </div>
@@ -472,6 +476,30 @@
     <h2 id="successOrderNum" style="font-size:2.2rem; color:var(--green-deep); margin:6px 0;">T-101</h2>
     <p class="sub">Ticket dispatched to Barista Kitchen Screen.</p>
     <button type="button" class="btn gold" id="nextTicketBtn" style="width:100%;">Next Customer</button>
+  </div>
+</div>
+
+<!-- Staff Sign In Modal -->
+<div class="modal-backdrop" id="cashierAuthModal" style="z-index: 99999; background: rgba(18, 30, 22, 0.96); backdrop-filter: blur(8px); display: flex;">
+  <div class="modal-card" style="max-width: 400px; text-align: center; border: 2px solid var(--green); box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+    <div style="font-size: 2.8rem; margin-bottom: 8px;">🔑</div>
+    <span class="step-tag" style="margin-bottom: 6px; display: inline-block;">Staff Access Only</span>
+    <h2 style="font-family: 'Fraunces', serif; color: var(--green-deep); margin: 0 0 8px;">amiTEA Cashier Sign In</h2>
+    <p class="sub" style="margin: 0 0 18px; font-size: 0.9rem;">Select your user account and enter your staff PIN to access the POS register.</p>
+    
+    <label class="fl" style="text-align: left; margin-bottom: 4px;">User Account</label>
+    <select id="cashierUserSelect" class="field" style="margin-bottom: 12px; font-size: 0.95rem; font-weight: 600; text-align: center;">
+      <option value="manager">Manager</option>
+      <option value="cashier1">Nyjah</option>
+      <option value="cashier2">Lucci</option>
+      <option value="kitchen">Kitchen Barista</option>
+    </select>
+
+    <label class="fl" style="text-align: left; margin-bottom: 4px;">Staff PIN</label>
+    <input type="password" id="cashierStaffPinInput" class="field pin-field" maxlength="6" inputmode="numeric" placeholder="Enter PIN" style="margin: 0 auto 12px; text-align: center; font-size: 1.2rem; letter-spacing: 4px;">
+    <p class="co-error" id="cashierStaffPinError" hidden style="margin-bottom: 12px;"></p>
+    
+    <button type="button" class="btn primary" id="cashierStaffSignInBtn" style="width: 100%; padding: 12px; font-weight: 700;">Sign In to Register</button>
   </div>
 </div>
 

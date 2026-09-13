@@ -96,7 +96,6 @@ const sectionRegister = document.getElementById("sectionRegister");
 const sectionBookkeeping = document.getElementById("sectionBookkeeping");
 
 // Bookkeeping Elements
-const BOOKKEEPING_PIN = "226283";
 const bkLockView = document.getElementById("bkLockView");
 const bkContentView = document.getElementById("bkContentView");
 const bkPinInput = document.getElementById("bkPinInput");
@@ -115,7 +114,83 @@ const bkOrderCount = document.getElementById("bkOrderCount");
 const bkTenderSplit = document.getElementById("bkTenderSplit");
 const bkSalesHistoryList = document.getElementById("bkSalesHistoryList");
 
-function initCashier() {
+async function initCashier() {
+  // Staff Auth Check
+  const cashierAuthModal = document.getElementById("cashierAuthModal");
+  const cashierUserSelect = document.getElementById("cashierUserSelect");
+  const cashierStaffPinInput = document.getElementById("cashierStaffPinInput");
+  const cashierStaffSignInBtn = document.getElementById("cashierStaffSignInBtn");
+  const cashierStaffPinError = document.getElementById("cashierStaffPinError");
+  const staffLogoutBtn = document.getElementById("staffLogoutBtn");
+  const staffUserDisplay = document.getElementById("staffUserDisplay");
+
+  async function loadUserOptions() {
+    if (cashierUserSelect && typeof StaffAuth !== "undefined") {
+      const users = await StaffAuth.fetchUsers();
+      cashierUserSelect.innerHTML = users.map(u => `<option value="${u.username}">${u.name}</option>`).join("");
+    }
+  }
+
+  function updateStaffDisplay() {
+    if (staffUserDisplay && typeof StaffAuth !== "undefined") {
+      const u = StaffAuth.getUser();
+      if (u) {
+        staffUserDisplay.textContent = `👤 ${u.name}`;
+      } else {
+        staffUserDisplay.textContent = "👤 Staff";
+      }
+    }
+  }
+
+  async function performStaffLogin() {
+    const username = cashierUserSelect ? cashierUserSelect.value : "manager";
+    const pin = cashierStaffPinInput ? cashierStaffPinInput.value.trim() : "";
+    if (typeof StaffAuth !== "undefined") {
+      cashierStaffSignInBtn.disabled = true;
+      const res = await StaffAuth.login(username, pin);
+      cashierStaffSignInBtn.disabled = false;
+      if (res.success) {
+        if (cashierStaffPinError) cashierStaffPinError.hidden = true;
+        if (cashierAuthModal) cashierAuthModal.style.display = "none";
+        updateStaffDisplay();
+        return;
+      } else {
+        if (cashierStaffPinError) {
+          cashierStaffPinError.textContent = res.error || "Incorrect PIN. Please try again.";
+          cashierStaffPinError.hidden = false;
+        }
+        if (cashierStaffPinInput) cashierStaffPinInput.select();
+      }
+    }
+  }
+
+  await loadUserOptions();
+
+  if (typeof StaffAuth !== "undefined" && StaffAuth.isAuthenticated()) {
+    if (cashierAuthModal) cashierAuthModal.style.display = "none";
+    updateStaffDisplay();
+  } else {
+    if (cashierAuthModal) cashierAuthModal.style.display = "flex";
+  }
+
+  if (cashierStaffSignInBtn) {
+    cashierStaffSignInBtn.addEventListener("click", performStaffLogin);
+  }
+
+  if (cashierStaffPinInput) {
+    cashierStaffPinInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") performStaffLogin();
+    });
+  }
+
+  if (staffLogoutBtn) {
+    staffLogoutBtn.addEventListener("click", () => {
+      if (typeof StaffAuth !== "undefined") {
+        StaffAuth.logout();
+      }
+    });
+  }
+
   updateLocationBadge();
   renderCatalog();
   renderTicket();
@@ -141,13 +216,20 @@ function initCashier() {
   });
 
   // Bookkeeping PIN Unlock
-  unlockBkBtn.addEventListener("click", () => {
+  unlockBkBtn.addEventListener("click", async () => {
     const entered = bkPinInput.value.trim();
-    if (entered !== BOOKKEEPING_PIN) {
-      bkPinError.textContent = "Incorrect manager PIN. (Default test PIN: 226283)";
-      bkPinError.hidden = false;
-      bkPinInput.select();
-      return;
+    if (typeof StaffAuth !== "undefined") {
+      unlockBkBtn.disabled = true;
+      const currentUser = StaffAuth.getUser();
+      const targetUser = (currentUser && currentUser.role === "manager") ? currentUser.username : "manager";
+      const res = await StaffAuth.login(targetUser, entered);
+      unlockBkBtn.disabled = false;
+      if (!res.success) {
+        bkPinError.textContent = "Incorrect manager PIN. Please try again.";
+        bkPinError.hidden = false;
+        bkPinInput.select();
+        return;
+      }
     }
     bkPinError.hidden = true;
     bkLockView.hidden = true;

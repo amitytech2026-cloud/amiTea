@@ -13,6 +13,82 @@ const kdsActiveDrinksCount = document.getElementById("kdsActiveDrinksCount");
 const kdsLocDisplay = document.getElementById("kdsLocDisplay");
 
 function initKDS() {
+  const kdsAuthModal = document.getElementById("kdsAuthModal");
+  const kdsUserSelect = document.getElementById("kdsUserSelect");
+  const kdsStaffPinInput = document.getElementById("kdsStaffPinInput");
+  const kdsStaffSignInBtn = document.getElementById("kdsStaffSignInBtn");
+  const kdsStaffPinError = document.getElementById("kdsStaffPinError");
+  const kdsStaffLogoutBtn = document.getElementById("kdsStaffLogoutBtn");
+  const kdsStaffUserDisplay = document.getElementById("kdsStaffUserDisplay");
+
+  async function loadKdsUserOptions() {
+    if (kdsUserSelect && typeof StaffAuth !== "undefined") {
+      const users = await StaffAuth.fetchUsers();
+      kdsUserSelect.innerHTML = users.map(u => `<option value="${u.username}" ${u.username === "kitchen" ? "selected" : ""}>${u.name}</option>`).join("");
+    }
+  }
+
+  function updateKdsStaffDisplay() {
+    if (kdsStaffUserDisplay && typeof StaffAuth !== "undefined") {
+      const u = StaffAuth.getUser();
+      if (u) {
+        kdsStaffUserDisplay.textContent = `👤 ${u.name}`;
+      } else {
+        kdsStaffUserDisplay.textContent = "👤 Kitchen";
+      }
+    }
+  }
+
+  async function performKdsLogin() {
+    const username = kdsUserSelect ? kdsUserSelect.value : "kitchen";
+    const pin = kdsStaffPinInput ? kdsStaffPinInput.value.trim() : "";
+    if (typeof StaffAuth !== "undefined") {
+      kdsStaffSignInBtn.disabled = true;
+      const res = await StaffAuth.login(username, pin);
+      kdsStaffSignInBtn.disabled = false;
+      if (res.success) {
+        if (kdsStaffPinError) kdsStaffPinError.hidden = true;
+        if (kdsAuthModal) kdsAuthModal.style.display = "none";
+        updateKdsStaffDisplay();
+        updateLocationHeader();
+        renderBoard();
+      } else {
+        if (kdsStaffPinError) {
+          kdsStaffPinError.textContent = res.error || "Incorrect PIN. Please try again.";
+          kdsStaffPinError.hidden = false;
+        }
+        if (kdsStaffPinInput) kdsStaffPinInput.select();
+      }
+    }
+  }
+
+  loadKdsUserOptions();
+
+  if (typeof StaffAuth !== "undefined" && StaffAuth.isAuthenticated()) {
+    if (kdsAuthModal) kdsAuthModal.style.display = "none";
+    updateKdsStaffDisplay();
+  } else {
+    if (kdsAuthModal) kdsAuthModal.style.display = "flex";
+  }
+
+  if (kdsStaffSignInBtn) {
+    kdsStaffSignInBtn.addEventListener("click", performKdsLogin);
+  }
+
+  if (kdsStaffPinInput) {
+    kdsStaffPinInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") performKdsLogin();
+    });
+  }
+
+  if (kdsStaffLogoutBtn) {
+    kdsStaffLogoutBtn.addEventListener("click", () => {
+      if (typeof StaffAuth !== "undefined") {
+        StaffAuth.logout();
+      }
+    });
+  }
+
   updateLocationHeader();
   renderBoard();
 

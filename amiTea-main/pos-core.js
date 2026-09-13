@@ -3,6 +3,70 @@
  * Shared Order Manager, Kitchen Display Queue, and Square Terminal Payment Service.
  */
 
+class StaffAuth {
+  static STORAGE_TOKEN_KEY = "amitea_staff_token";
+  static STORAGE_USER_KEY = "amitea_staff_user";
+  static API_AUTH_URL = "/api/auth";
+
+  static async fetchUsers() {
+    try {
+      const res = await fetch(this.API_AUTH_URL);
+      if (res.ok) {
+        return await res.json();
+      }
+    } catch (e) {
+      console.error("Failed to fetch staff users:", e);
+    }
+    return [
+      { username: "manager", name: "Manager", role: "manager" },
+      { username: "cashier1", name: "Nyjah", role: "cashier" },
+      { username: "cashier2", name: "Lucci", role: "cashier" },
+      { username: "kitchen", name: "Kitchen Barista", role: "kitchen" }
+    ];
+  }
+
+  static isAuthenticated() {
+    return !!sessionStorage.getItem(this.STORAGE_TOKEN_KEY);
+  }
+
+  static getUser() {
+    try {
+      return JSON.parse(sessionStorage.getItem(this.STORAGE_USER_KEY) || "null");
+    } catch {
+      return null;
+    }
+  }
+
+  static async login(username, pin) {
+    try {
+      const res = await fetch(this.API_AUTH_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, pin })
+      });
+      const data = await res.json();
+      if (data && data.success) {
+        sessionStorage.setItem(this.STORAGE_TOKEN_KEY, data.token);
+        sessionStorage.setItem(this.STORAGE_USER_KEY, JSON.stringify(data.user));
+        return { success: true, user: data.user };
+      }
+      return { success: false, error: data?.error || "Invalid user or PIN." };
+    } catch (e) {
+      return { success: false, error: "Network authentication error." };
+    }
+  }
+
+  static logout() {
+    sessionStorage.removeItem(this.STORAGE_TOKEN_KEY);
+    sessionStorage.removeItem(this.STORAGE_USER_KEY);
+    window.location.reload();
+  }
+}
+
+if (typeof window !== "undefined") {
+  window.StaffAuth = StaffAuth;
+}
+
 class AmiPOS {
   static STORAGE_ORDERS_KEY = "amitea_pos_orders";
   static STORAGE_CART_KEY = "amitea_shared_cart";
