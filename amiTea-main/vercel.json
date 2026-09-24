@@ -1,7 +1,13 @@
 {
+  "redirects": [
+    { "source": "/menu.html", "destination": "/menu", "permanent": true }
+  ],
   "rewrites": [
     { "source": "/staff", "destination": "/cashier.html" },
     { "source": "/staff/(.*)", "destination": "/cashier.html" },
+    { "source": "/kitchen", "destination": "/kds.html" },
+    { "source": "/kitchen/(.*)", "destination": "/kds.html" },
+    { "source": "/menu", "destination": "/menu.html" },
     { "source": "/customer", "destination": "/menu.html" },
     { "source": "/customer/(.*)", "destination": "/menu.html" }
   ]

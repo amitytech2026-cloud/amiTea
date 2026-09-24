@@ -101,9 +101,12 @@ class NoCacheHandler(SimpleHTTPRequestHandler):
             return
 
         routes = {
-            "": "/menu.html",
-            "/": "/menu.html",
+            "": "/index.html",
+            "/": "/index.html",
             "/staff": "/cashier.html",
+            "/kitchen": "/kds.html",
+            "/menu": "/menu.html",
+            "/menu.html": "/menu",
             "/customer": "/menu.html",
         }
         if path in routes:
@@ -209,9 +212,12 @@ class NoCacheHandler(SimpleHTTPRequestHandler):
     def do_HEAD(self):
         path = urlsplit(self.path).path
         routes = {
-            "": "/menu.html",
-            "/": "/menu.html",
+            "": "/index.html",
+            "/": "/index.html",
             "/staff": "/cashier.html",
+            "/kitchen": "/kds.html",
+            "/menu": "/menu.html",
+            "/menu.html": "/menu",
             "/customer": "/menu.html",
         }
         if path in routes:

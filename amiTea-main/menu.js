@@ -87,6 +87,6 @@ menu.addEventListener('click', event=>{
   const item=event.target.closest('[data-book-item]');
   if(item){
     const menuItem=encodeURIComponent(item.dataset.bookItem);
-    window.location.href=`index.html?menuItem=${menuItem}`;
+    window.location.href=`/?menuItem=${menuItem}`;
   }
 });

@@ -18,10 +18,10 @@ Open http://localhost:8000 in your browser.
 
 | Screen | URL | Purpose |
 | :--- | :--- | :--- |
-| **Step-by-Step Builder** | [index.html](index.html) | Customer kiosk guided flow (Temp $\rightarrow$ Base $\rightarrow$ Milk $\rightarrow$ Boba $\rightarrow$ Quantity). |
-| **Menu Catalog** | [menu.html](menu.html) | Customer search bar, category filters, quick drink customizer modal, and Square checkout. |
-| **Staff Cashier POS** | [cashier.html](cashier.html) | Staff touch register, location/tax selector, Square Terminal tender, and Cash change calculator. |
-| **Kitchen Display Board** | [kds.html](kds.html) | Real-time barista ticket board with drink tags (Hot/Iced, Sweetness, Milk, Boba) and queue progression. |
+| **Step-by-Step Builder** | [/](/) | Customer kiosk guided flow (Temp $\rightarrow$ Base $\rightarrow$ Milk $\rightarrow$ Boba $\rightarrow$ Quantity). |
+| **Menu Catalog** | [/menu](/menu) | Customer search bar, category filters, quick drink customizer modal, and Square checkout. |
+| **Staff Cashier POS** | [/staff](/staff) | Staff touch register, location/tax selector, Square Terminal tender, and Cash change calculator. |
+| **Kitchen Display Board** | [/kitchen](/kitchen) | Real-time barista ticket board with drink tags (Hot/Iced, Sweetness, Milk, Boba) and queue progression. |
 
 ---
 
@@ -33,7 +33,7 @@ Open http://localhost:8000 in your browser.
 
 ## Staff Accounts & Authentication
 
-The Cashier POS (`/cashier.html`) and Kitchen Display Board (`/kds.html`) are secured behind user authentication. Staff members can select from **4 user accounts**:
+The Cashier POS (`/staff`) and Kitchen Display Board (`/kitchen`) are secured behind user authentication. Staff members can select from **4 user accounts**:
 
 1. **Manager** (`manager`)
 2. **Nyjah** (`cashier1`)

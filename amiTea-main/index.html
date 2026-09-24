@@ -16,8 +16,8 @@
   <h1 class="kicker">Build Your <em>amiTEA</em></h1>
   <p class="tag">tea among friends</p>
   <nav class="page-nav" aria-label="Main navigation">
-    <a class="btn ghost active" href="index.html">Build your amiTEA</a>
-    <a class="btn ghost" href="menu.html">View menu</a>
+    <a class="btn ghost active" href="/">Build your amiTEA</a>
+    <a class="btn ghost" href="menu">View menu</a>
   </nav>
 </header>
 
@@ -182,7 +182,7 @@
 <script>
   const params = new URLSearchParams(window.location.search);
   if (!params.get('menuItem')) {
-    window.location.replace('menu.html');
+    window.location.replace('menu');
   }
 </script>
 <script src="pos-config.js"></script>
